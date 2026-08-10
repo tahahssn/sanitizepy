@@ -1,0 +1,29 @@
+Metadata-Version: 2.4
+Name: cleaner
+Version: 0.1.0
+Summary: A production-ready Python library for automated data inspection, cleaning, preprocessing, and feature engineering.
+Author: Syed Muhammad Taha Hassan
+License: MIT
+Keywords: machine-learning,data-cleaning,eda,feature-engineering,preprocessing,pandas,python,data-analysis
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.13
+Classifier: Topic :: Scientific/Engineering :: Artificial Intelligence
+Classifier: Topic :: Software Development :: Libraries
+Requires-Python: >=3.13
+Description-Content-Type: text/markdown
+Requires-Dist: numpy>=2.5.1
+Requires-Dist: pandas>=3.0.5
+Requires-Dist: scipy>=1.18.0
+Requires-Dist: rich>=15.0.0
+Requires-Dist: pydantic>=2.13.4
+Provides-Extra: dev
+Requires-Dist: black>=26.5.1; extra == "dev"
+Requires-Dist: ruff>=0.16.0; extra == "dev"
+Requires-Dist: mypy>=1.18.0; extra == "dev"
+Requires-Dist: pytest>=9.1.1; extra == "dev"
+Requires-Dist: pytest-cov>=7.1.0; extra == "dev"
