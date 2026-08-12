@@ -6,7 +6,6 @@ from typing import Final
 import pandas as pd
 from pandas.api.types import (
     is_bool_dtype,
-    is_categorical_dtype,
     is_datetime64_any_dtype,
     is_float_dtype,
     is_integer_dtype,
@@ -171,7 +170,7 @@ class DatatypeInspector:
         if is_datetime64_any_dtype(series):
             return "datetime"
 
-        if is_categorical_dtype(series):
+        if isinstance(series.dtype, pd.CategoricalDtype):
             return "category"
 
         if is_string_dtype(series):

@@ -13,12 +13,12 @@ from typing import List
 
 from pydantic import Field
 
-from .base import CleanerBaseModel
+from .base import BaseCleanerModel
 from .inspection import InspectionResult
 from .recommendations import Recommendation
 
 
-class ReportSummary(CleanerBaseModel):
+class ReportSummary(BaseCleanerModel):
     """
     High-level summary statistics.
     """
@@ -39,7 +39,7 @@ class ReportSummary(CleanerBaseModel):
     )
 
 
-class ExecutionMetadata(CleanerBaseModel):
+class ExecutionMetadata(BaseCleanerModel):
     """
     Runtime information.
     """
@@ -55,7 +55,7 @@ class ExecutionMetadata(CleanerBaseModel):
     cleaner_version: str
 
 
-class CleanerReport(CleanerBaseModel):
+class CleanerReport(BaseCleanerModel):
     """
     Final report returned by Cleaner.
 

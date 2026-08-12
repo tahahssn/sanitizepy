@@ -3,9 +3,9 @@ requires = ["setuptools>=80", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "cleaner"
+name = "cleaner-data"
 version = "0.1.0"
-description = "A production-ready Python library for automated data inspection, cleaning, preprocessing, and feature engineering."
+description = "An open-source Python engine for automated tabular data quality inspection, explainable cleaning, and preprocessing."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
@@ -16,6 +16,7 @@ authors = [
 
 keywords = [
     "machine-learning",
+    "data-quality",
     "data-cleaning",
     "eda",
     "feature-engineering",
@@ -32,27 +33,29 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Topic :: Software Development :: Libraries"
 ]
 
 dependencies = [
-    "numpy>=2.5.1",
-    "pandas>=3.0.5",
-    "scipy>=1.18.0",
-    "rich>=15.0.0",
-    "pydantic>=2.13.4"
+    "numpy>=1.24.0",
+    "pandas>=2.0.0",
+    "scipy>=1.10.0",
+    "rich>=13.0.0",
+    "pydantic>=2.0.0"
 ]
 
 [project.optional-dependencies]
 
 dev = [
-    "black>=26.5.1",
-    "ruff>=0.16.0",
-    "mypy>=1.18.0",
-    "pytest>=9.1.1",
-    "pytest-cov>=7.1.0"
+    "black>=24.0.0",
+    "ruff>=0.4.0",
+    "mypy>=1.10.0",
+    "pytest>=8.0.0",
+    "pytest-cov>=5.0.0"
 ]
 
 [tool.setuptools]

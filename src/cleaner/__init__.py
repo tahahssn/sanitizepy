@@ -1,8 +1,8 @@
 """
-Cleaner
+cleaner-data
 
-Production-ready Python library for automated data inspection,
-cleaning, preprocessing, and feature engineering.
+An open-source Python engine for automated tabular data quality inspection,
+explainable cleaning, and preprocessing.
 """
 
 from __future__ import annotations
@@ -10,18 +10,36 @@ from __future__ import annotations
 from .api import (
     Cleaner,
     CleanerConfig,
-    DEFAULT_CONFIG,
     CleanerError,
+    CleaningEngine,
+    CleaningPlan,
+    CleaningResult,
     ConfigurationError,
+    DEFAULT_CONFIG,
     DataValidationError,
+    DatasetHealthReport,
+    DatasetIssue,
     EngineError,
+    OperationResult,
     VERSION,
     VERSION_INFO,
+    clean,
     get_version,
+    inspect,
+    plan,
 )
 
 __all__ = [
     "Cleaner",
+    "inspect",
+    "plan",
+    "clean",
+    "DatasetHealthReport",
+    "DatasetIssue",
+    "CleaningPlan",
+    "CleaningResult",
+    "OperationResult",
+    "CleaningEngine",
     "CleanerConfig",
     "DEFAULT_CONFIG",
     "CleanerError",

@@ -1,20 +1,21 @@
 
-# cleaner
+# cleaner-data
 
-A production-ready Python library for automated data inspection, cleaning, preprocessing, feature engineering, rule execution, reporting, and pipeline orchestration.
+An open-source Python engine for automated tabular data quality inspection, explainable cleaning, and preprocessing.
 
 ---
 
 ## Overview
 
-`cleaner` provides modular, high-performance data engineering components built on top of `pandas`, `numpy`, `scipy`, `rich`, and `pydantic`. The library is designed around independent engines that can be used individually or composed into structured processing pipelines.
+`cleaner-data` provides modular, high-performance data engineering components built on top of `pandas`, `numpy`, `scipy`, `rich`, and `pydantic`. The library is designed around a transparent **Detect → Explain → Recommend → Preview → Apply → Validate → Audit** workflow.
 
-`cleaner` separates responsibilities into dedicated subsystems:
-- **Core & Config**: Centralized configuration (`CleanerConfig`) and logging (`logger`).
-- **Inspection Engine**: Read-only dataset analysis covering missing values, duplicates, datatypes, memory consumption, and statistical distributions.
-- **Cleaning Engine**: Deterministic dataset transformations including row/column dropping, duplicate removal, value imputation, and column selection.
+`cleaner-data` separates responsibilities into dedicated subsystems:
+- **Core Engine & High-Level API**: Centralized `Cleaner` entry point supporting `.inspect()`, `.plan()`, and `.clean(..., dry_run=True)`.
+- **Dataset Health & Inspection**: Read-only dataset analysis covering completeness, uniqueness, consistency, validity, datatypes, memory consumption, and statistical distributions with a composite **Dataset Health Score (0–100)**.
+- **Explainable Recommendations & Planning**: Rule-based issue detection with human-readable explanations (`WHAT`, `WHY`, `SEVERITY`, `EVIDENCE`, `RECOMMENDATION`) and previewable `CleaningPlan` instances.
+- **Cleaning Engine**: Safe, deterministic dataset transformations with dry-run support, before/after impact metrics, and detailed audit trails.
 - **Preprocessing & Feature Engineering**: Stateful fit/transform operations for interactions, ratio features, polynomial terms, logarithmic transformations, and datetime extraction.
-- **Rule Engine**: Validation framework with built-in data quality rules, severity levels, and category classifications.
+- **Rule Engine**: Quality validation framework with built-in rules, severity levels, and category classifications.
 - **Report Engine**: Structured report generation, rendering (Text, JSON), and exporting (String, File).
 - **Pipeline Engine**: Execution workflow orchestration with step timing and metadata tracking.
 
@@ -24,9 +25,10 @@ A production-ready Python library for automated data inspection, cleaning, prepr
 
 | Area | Component | Key Functionality |
 | :--- | :--- | :--- |
-| **Core & Config** | `Cleaner`, `CleanerConfig` | Package entry point, global runtime settings, logging configuration |
-| **Inspection** | `MissingValueInspector`, `DuplicateInspector`, `DatatypeInspector`, `MemoryInspector`, `StatisticsInspector` | Read-only dataset analysis, severity scoring, memory estimation, distribution stats |
-| **Cleaning** | `CleaningEngine`, `DropMissingRows`, `DropMissingColumns`, `FillMissing`, `DropDuplicates`, `DropColumns` | Ordered row and column cleaning operations without silent mutations |
+| **Core & High-Level API** | `Cleaner`, `CleanerConfig` | Unified entry point for `.inspect()`, `.plan()`, and `.clean(..., dry_run=True)` |
+| **Dataset Health & Inspection** | `Cleaner.inspect()`, `MissingValueInspector`, `DuplicateInspector`, `DatatypeInspector`, `MemoryInspector`, `StatisticsInspector` | Dataset Health Score (0-100), severity scoring, memory estimation, distribution stats |
+| **Recommendations & Planning** | `CleaningPlan`, `IssueDetector` | Human-readable recommendations, issue severity classification (`critical`, `warning`, `info`), previewable execution plan |
+| **Cleaning Engine** | `CleaningEngine`, `DropMissingRows`, `DropMissingColumns`, `FillMissing`, `DropDuplicates`, `DropColumns` | Deterministic cleaning operations with `dry_run` support, `OperationResult`, and immutable audit log |
 | **Preprocessing** | `FeatureEngineeringEngine`, `ColumnInteraction`, `RatioFeature`, `PolynomialFeature`, `LogFeature`, `DatetimeFeatures` | Stateful fit/transform feature generation preserving dataset indices |
 | **Rules** | `RuleEngine`, `RuleRegistry`, `Rule`, `register_builtin_rules` | Data quality rules, severity levels (`info`, `warning`, `error`, `critical`), custom rules |
 | **Reporting** | `ReportEngine`, `TextRenderer`, `JSONRenderer`, `StringExporter`, `FileExporter` | Structured immutable reports with multi-format rendering and exporting |
@@ -38,11 +40,11 @@ A production-ready Python library for automated data inspection, cleaning, prepr
 
 - **Python**: `>=3.11`
 - **Core Dependencies**:
-  - `numpy >= 2.5.1`
-  - `pandas >= 3.0.5`
-  - `scipy >= 1.18.0`
-  - `rich >= 15.0.0`
-  - `pydantic >= 2.13.4`
+  - `numpy >= 1.24.0`
+  - `pandas >= 2.0.0`
+  - `scipy >= 1.10.0`
+  - `rich >= 13.0.0`
+  - `pydantic >= 2.0.0`
 
 ---
 
@@ -50,16 +52,16 @@ A production-ready Python library for automated data inspection, cleaning, prepr
 
 ### Standard User Installation
 
-Install `cleaner` using `pip`:
+Install `cleaner-data` using `pip`:
 
 ```bash
-pip install cleaner
+pip install cleaner-data
 ```
 
 Or via `python -m pip`:
 
 ```bash
-python -m pip install cleaner
+python -m pip install cleaner-data
 ```
 
 ### Developer / Contributor Installation
@@ -67,119 +69,122 @@ python -m pip install cleaner
 For local development or contributing to the codebase, clone the repository and perform an editable installation with development dependencies:
 
 ```bash
-git clone https://github.com/cleaner-dev/cleaner.git
+git clone https://github.com/tahahssn/cleaner.git
 cd cleaner
 pip install -e .[dev]
 ```
 
-> **Note**: `pip install -e .` is reserved for local development and testing. Standard library users should install via `pip install cleaner`.
-
 ---
 
-## Quick Start
+## Quick Start — High-Level API
 
-Below is a complete workflow demonstrating data inspection, cleaning, feature engineering, rule execution, report generation, and pipeline composition.
+The recommended entry point is the `Cleaner` class or the module-level convenience functions `inspect()`, `plan()`, and `clean()`.
 
 ```python
 import pandas as pd
-
-from cleaner import Cleaner, CleanerConfig
-from cleaner.cleaning import CleaningEngine, DropDuplicates, FillMissing
-from cleaner.inspection import MissingValueInspector
-from cleaner.pipeline import CallableStep, PipelineEngine, TransformStep
-from cleaner.preprocessing import ColumnInteraction, FeatureEngineeringEngine, RatioFeature
-from cleaner.reports import ReportEngine, StringExporter, TextRenderer
-from cleaner.rules import RuleEngine, RuleRegistry, register_builtin_rules
-
-# 1. Initialize global configuration
-cleaner = Cleaner(config=CleanerConfig(float_precision=4, preview_rows=10))
+from cleaner import Cleaner
 
 # Load your dataset
 df = pd.read_csv("your_data.csv")
 
-# 2. Perform read-only missing value inspection
+# 1. Inspect — Understand what's wrong
+c = Cleaner()
+report = c.inspect(df)
+report.show()                     # Rich terminal health report
+
+print(f"Health Score: {report.health_score}/100")
+print(f"Critical Issues: {len(report.critical_issues)}")
+print(f"Recommendations: {len(report.recommendations)}")
+
+# 2. Plan — Generate a previewable cleaning plan
+plan = c.plan(report)
+plan.show()                       # Tabular plan preview
+
+# Optional: disable or enable specific steps
+plan.disable(2)                   # Disable step #2
+plan.enable(2)                    # Re-enable step #2
+
+# 3. Clean — Execute with dry-run or for real
+# Dry run: see what WOULD happen without changing data
+dry_result = c.clean(df, plan=plan, dry_run=True)
+print(dry_result.summary())
+
+# Apply for real
+result = c.clean(df, plan=plan, dry_run=False)
+cleaned_df = result.data
+
+print(result.summary())           # Human-readable summary
+print(result.audit_log)           # JSON-serializable audit trail
+```
+
+### Convenience Functions
+
+```python
+from cleaner import inspect, plan, clean
+
+report = inspect(df)
+cleaning_plan = plan(report)
+result = clean(df, cleaning_plan=cleaning_plan, dry_run=True)
+```
+
+---
+
+## Advanced Usage — Direct Engine Access
+
+For granular control, use the individual engines directly:
+
+```python
+from cleaner.cleaning import CleaningEngine, DropDuplicates, FillMissing
+from cleaner.inspection import MissingValueInspector
+
+# Read-only inspection
 inspector = MissingValueInspector()
 inspection_result = inspector.inspect(df)
-print(f"Missing Severity: {inspection_result.summary.severity}")
-print(f"Missing Cells: {inspection_result.summary.missing_cells}")
 
-# 3. Configure data cleaning
-clean_engine = CleaningEngine([
+# Manual cleaning engine
+engine = CleaningEngine([
     FillMissing(value=0.0, subset=["numeric_column"]),
     DropDuplicates(keep="first"),
 ])
 
-# 4. Configure feature engineering (fit/transform contract)
-feat_engine = FeatureEngineeringEngine([
-    ColumnInteraction("feature_a", "feature_b", output_column="a_x_b"),
-    RatioFeature("feature_a", "feature_b", output_column="a_div_b", zero_division="nan"),
-])
-
-# 5. Compose a processing pipeline
-pipeline = PipelineEngine([
-    CallableStep("cleaning_step", clean_engine.run),
-    TransformStep("feature_step", feat_engine),
-])
-
-# Execute pipeline
-pipeline_result = pipeline.run(df)
-processed_df = pipeline_result.data
-print(f"Pipeline executed in {pipeline_result.duration_seconds:.4f} seconds")
-
-# 6. Evaluate data quality rules
-registry = RuleRegistry()
-register_builtin_rules(registry)
-rule_engine = RuleEngine(registry=registry)
-rule_results = rule_engine.run(processed_df)
-
-# 7. Generate and render structured report
-report_engine = ReportEngine()
-report = report_engine.run(
-    results={
-        "inspection": inspection_result.summary,
-        "cleaning_operations": clean_engine.describe(),
-        "pipeline_steps": [s.name for s in pipeline_result.steps],
-    },
-    title="Dataset Processing Summary",
-)
-
-rendered_report = StringExporter().export(report, TextRenderer())
-print(rendered_report)
+# Run with full result tracking
+result = engine.run_with_result(df, dry_run=False)
+print(result.summary())
+print(result.audit_log)
 ```
 
 ---
 
 ## Architecture & Design
 
-`cleaner` adopts a decoupled architecture where inspection, cleaning, feature engineering, validation, and reporting are separate single-responsibility components:
+`cleaner-data` adopts a transparent **Detect → Explain → Recommend → Preview → Apply → Validate → Audit** workflow:
 
 ```text
                ┌───────────────────────┐
-               │     Input Data        │
+               │      Dataset          │
                └───────────┬───────────┘
                            │
              ┌─────────────┴─────────────┐
-             │    Inspection Engine      │ (Read-Only Analysis)
+             │    Dataset Profiler /     │
+             │    Issue Detector         │ (Read-Only)
              └─────────────┬─────────────┘
                            │
              ┌─────────────┴─────────────┐
-             │     Cleaning Engine       │ (Deterministic Cleaning)
+             │   Recommendation Engine   │ (Explainable)
              └─────────────┬─────────────┘
                            │
              ┌─────────────┴─────────────┐
-             │ Preprocessing / Features  │ (Fit/Transform Operations)
+             │     Cleaning Plan         │ (Previewable)
+             └─────────────┬─────────────┘
+                           │
+                    user approves
+                           │
+             ┌─────────────┴─────────────┐
+             │  Transformation Engine    │ (Deterministic)
              └─────────────┬─────────────┘
                            │
              ┌─────────────┴─────────────┐
-             │       Rule Engine         │ (Quality Validation)
-             └─────────────┬─────────────┘
-                           │
-             ┌─────────────┴─────────────┐
-             │     Pipeline Engine       │ (Workflow Orchestration)
-             └─────────────┬─────────────┘
-                           │
-             ┌─────────────┴─────────────┐
-             │      Report Engine        │ (Rendering & Exporting)
+             │    Validation / Audit     │ (Auditable)
              └───────────────────────────┘
 ```
 
@@ -189,9 +194,9 @@ print(rendered_report)
 
 Detailed documentation is available in the `docs/` directory:
 
-- [Installation Guide](file:///d:/cleaner/docs/installation.md): Requirements, virtual environments, installation commands, verification, and upgrade procedures.
-- [Quick Start Guide](file:///d:/cleaner/docs/quickstart.md): Step-by-step examples for inspection, cleaning, feature engineering, rules, reporting, and pipelines.
-- [API Reference](file:///d:/cleaner/docs/api.md): Complete technical API documentation for classes, functions, dataclasses, models, and exceptions.
+- [Installation Guide](docs/installation.md): Requirements, virtual environments, installation commands, verification, and upgrade procedures.
+- [Quick Start Guide](docs/quickstart.md): Step-by-step examples for inspection, cleaning, feature engineering, rules, reporting, and pipelines.
+- [API Reference](docs/api.md): Complete technical API documentation for classes, functions, dataclasses, models, and exceptions.
 
 ---
 
@@ -217,4 +222,5 @@ mypy src
 
 ## License
 
-`cleaner` is distributed under the terms of the [MIT License](file:///d:/cleaner/pyproject.toml).
+`cleaner-data` is distributed under the terms of the [MIT License](LICENSE).
+

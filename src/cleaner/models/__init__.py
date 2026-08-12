@@ -11,17 +11,43 @@ Users can simply import models directly:
     from cleaner.models import InspectionResult
 """
 
-from .base import CleanerBaseModel
+from .base import (
+    BaseCleanerModel,
+    ColumnReference,
+    DataShape,
+    DatasetInfo,
+    ExecutionTime,
+    IdentifiedModel,
+    MetadataModel,
+    ResourceUsage,
+    TimestampedModel,
+    VersionInfo,
+)
 
 from .inspection import (
+    CategoricalStatistics,
     ColumnInspection,
+    ColumnIssue,
+    DataTypeResult,
+    DuplicateResult,
     InspectionResult,
+    InspectionStatus,
+    InspectionSummary,
+    MissingValueResult,
+    NumericStatistics,
+    Severity,
 )
 
 from .recommendations import (
     Recommendation,
     RecommendationAction,
-    RecommendationSeverity,
+    RecommendationCategory,
+    RecommendationGroup,
+    RecommendationImpact,
+    RecommendationPriority,
+    RecommendationReason,
+    RecommendationResult,
+    RecommendationSummary,
 )
 
 from .report import (
@@ -32,17 +58,38 @@ from .report import (
 
 __all__ = [
     # Base
-    "CleanerBaseModel",
-
+    "BaseCleanerModel",
+    "IdentifiedModel",
+    "TimestampedModel",
+    "MetadataModel",
+    "ResourceUsage",
+    "ExecutionTime",
+    "DataShape",
+    "ColumnReference",
+    "DatasetInfo",
+    "VersionInfo",
     # Inspection
+    "Severity",
+    "InspectionStatus",
+    "ColumnIssue",
+    "MissingValueResult",
+    "DuplicateResult",
+    "DataTypeResult",
+    "NumericStatistics",
+    "CategoricalStatistics",
     "ColumnInspection",
+    "InspectionSummary",
     "InspectionResult",
-
     # Recommendations
-    "Recommendation",
+    "RecommendationCategory",
+    "RecommendationPriority",
     "RecommendationAction",
-    "RecommendationSeverity",
-
+    "RecommendationReason",
+    "RecommendationImpact",
+    "Recommendation",
+    "RecommendationGroup",
+    "RecommendationSummary",
+    "RecommendationResult",
     # Reports
     "CleanerReport",
     "ExecutionMetadata",

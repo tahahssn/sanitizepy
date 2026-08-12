@@ -151,6 +151,7 @@ class ColumnReference(BaseCleanerModel):
     )
 
     dtype: str = Field(
+        default="unknown",
         min_length=1,
         description="Detected dtype.",
     )

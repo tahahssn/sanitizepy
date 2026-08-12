@@ -1,23 +1,26 @@
-"""
-cleaner.api
-
-Stable public API for the Cleaner library.
-"""
-
-from __future__ import annotations
-
+from .cleaning import CleaningEngine, CleaningPlan, CleaningResult, OperationResult
 from .config import CleanerConfig, DEFAULT_CONFIG
-from .core import Cleaner
+from .core import Cleaner, clean, inspect, plan
 from .exceptions import (
     CleanerError,
     ConfigurationError,
     DataValidationError,
     EngineError,
 )
+from .inspection.health import DatasetHealthReport, DatasetIssue
 from .version import VERSION, VERSION_INFO, get_version
 
 __all__ = [
     "Cleaner",
+    "inspect",
+    "plan",
+    "clean",
+    "DatasetHealthReport",
+    "DatasetIssue",
+    "CleaningPlan",
+    "CleaningResult",
+    "OperationResult",
+    "CleaningEngine",
     "CleanerConfig",
     "DEFAULT_CONFIG",
     "CleanerError",
