@@ -1,5 +1,5 @@
 
-# cleaner-data
+# sanitizepy
 
 An open-source Python engine for automated tabular data quality inspection, explainable cleaning, and preprocessing.
 
@@ -7,9 +7,9 @@ An open-source Python engine for automated tabular data quality inspection, expl
 
 ## Overview
 
-`cleaner-data` provides modular, high-performance data engineering components built on top of `pandas`, `numpy`, `scipy`, `rich`, and `pydantic`. The library is designed around a transparent **Detect → Explain → Recommend → Preview → Apply → Validate → Audit** workflow.
+`sanitizepy` provides modular, high-performance data engineering components built on top of `pandas`, `numpy`, `scipy`, `rich`, and `pydantic`. The library is designed around a transparent **Detect → Explain → Recommend → Preview → Apply → Validate → Audit** workflow.
 
-`cleaner-data` separates responsibilities into dedicated subsystems:
+`sanitizepy` separates responsibilities into dedicated subsystems:
 - **Core Engine & High-Level API**: Centralized `Cleaner` entry point supporting `.inspect()`, `.plan()`, and `.clean(..., dry_run=True)`.
 - **Dataset Health & Inspection**: Read-only dataset analysis covering completeness, uniqueness, consistency, validity, datatypes, memory consumption, and statistical distributions with a composite **Dataset Health Score (0–100)**.
 - **Explainable Recommendations & Planning**: Rule-based issue detection with human-readable explanations (`WHAT`, `WHY`, `SEVERITY`, `EVIDENCE`, `RECOMMENDATION`) and previewable `CleaningPlan` instances.
@@ -52,16 +52,16 @@ An open-source Python engine for automated tabular data quality inspection, expl
 
 ### Standard User Installation
 
-Install `cleaner-data` using `pip`:
+Install `sanitizepy` using `pip`:
 
 ```bash
-pip install cleaner-data
+pip install sanitizepy
 ```
 
 Or via `python -m pip`:
 
 ```bash
-python -m pip install cleaner-data
+python -m pip install sanitizepy
 ```
 
 ### Developer / Contributor Installation
@@ -157,7 +157,8 @@ print(result.audit_log)
 
 ## Architecture & Design
 
-`cleaner-data` adopts a transparent **Detect → Explain → Recommend → Preview → Apply → Validate → Audit** workflow:
+`sanitizepy` adopts the following transparent workflow:
+**Detect → Explain → Recommend → Preview → Apply → Validate → Audit**
 
 ```text
                ┌───────────────────────┐
@@ -222,5 +223,5 @@ mypy src
 
 ## License
 
-`cleaner-data` is distributed under the terms of the [MIT License](LICENSE).
+`sanitizepy` is distributed under the terms of the [MIT License](LICENSE).
 

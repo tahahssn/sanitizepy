@@ -12,7 +12,7 @@ from cleaner.logger import get_logger
 
 class Cleaner:
     """
-    Main entry point of the cleaner-data library.
+    Main entry point of the sanitizepy library.
 
     Provides a high-level, cohesive API for dataset health inspection,
     explainable plan generation, and safe execution with dry-run support.
@@ -106,4 +106,4 @@ __all__ = [
     "inspect",
     "plan",
     "clean",
-]
+]

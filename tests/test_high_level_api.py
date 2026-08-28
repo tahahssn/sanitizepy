@@ -1,5 +1,5 @@
 """
-Unit and integration tests for the high-level cleaner-data API:
+Unit and integration tests for the high-level sanitizepy API:
 inspect(), plan(), clean(), Cleaner(), dry-run mode, and health scoring.
 """
 

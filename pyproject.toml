@@ -3,7 +3,7 @@ requires = ["setuptools>=80", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "cleaner-data"
+name = "sanitizepy"
 version = "0.1.0"
 description = "An open-source Python engine for automated tabular data quality inspection, explainable cleaning, and preprocessing."
 readme = "README.md"

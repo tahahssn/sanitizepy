@@ -1,5 +1,5 @@
 """
-cleaner-data
+sanitizepy
 
 An open-source Python engine for automated tabular data quality inspection,
 explainable cleaning, and preprocessing.

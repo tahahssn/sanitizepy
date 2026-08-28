@@ -1,6 +1,6 @@
-# Contributing to cleaner-data
+# Contributing to sanitizepy
 
-Thank you for your interest in contributing to `cleaner-data`! We welcome contributions of all kinds, including bug fixes, feature improvements, documentation updates, and test coverage enhancements.
+Thank you for your interest in contributing to `sanitizepy`! We welcome contributions of all kinds, including bug fixes, feature improvements, documentation updates, and test coverage enhancements.
 
 ## Development Setup
 
