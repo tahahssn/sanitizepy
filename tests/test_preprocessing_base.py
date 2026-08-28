@@ -1,5 +1,5 @@
 """
-Tests for cleaner.preprocessing.base (FeatureOperation)
+Tests for sanitizepy.preprocessing.base (FeatureOperation)
 """
 
 from __future__ import annotations
@@ -7,7 +7,7 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from cleaner.preprocessing.base import FeatureOperation
+from sanitizepy.preprocessing.base import FeatureOperation
 
 
 class _ConcreteFeatureOp(FeatureOperation):

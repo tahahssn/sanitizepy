@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from time import perf_counter
 
-from cleaner.reports import (
+from sanitizepy.reports import (
     JSONRenderer,
     ReportEngine,
     StringExporter,

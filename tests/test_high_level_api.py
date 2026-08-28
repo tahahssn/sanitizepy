@@ -8,8 +8,8 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-import cleaner
-from cleaner import Cleaner, CleaningPlan, CleaningResult, DatasetHealthReport
+import sanitizepy
+from sanitizepy import Cleaner, CleaningPlan, CleaningResult, DatasetHealthReport
 
 
 @pytest.fixture
@@ -50,7 +50,7 @@ def sample_raw_dataframe() -> pd.DataFrame:
 
 
 def test_top_level_inspect(sample_raw_dataframe: pd.DataFrame) -> None:
-    report = cleaner.inspect(sample_raw_dataframe)
+    report = sanitizepy.inspect(sample_raw_dataframe)
     assert isinstance(report, DatasetHealthReport)
     assert 0 <= report.health_score <= 100
     assert report.rows == 10
@@ -64,9 +64,9 @@ def test_top_level_inspect(sample_raw_dataframe: pd.DataFrame) -> None:
 
 
 def test_top_level_plan(sample_raw_dataframe: pd.DataFrame) -> None:
-    report = cleaner.inspect(sample_raw_dataframe)
-    plan_from_report = cleaner.plan(report)
-    plan_from_df = cleaner.plan(sample_raw_dataframe)
+    report = sanitizepy.inspect(sample_raw_dataframe)
+    plan_from_report = sanitizepy.plan(report)
+    plan_from_df = sanitizepy.plan(sample_raw_dataframe)
 
     assert isinstance(plan_from_report, CleaningPlan)
     assert isinstance(plan_from_df, CleaningPlan)
@@ -74,7 +74,7 @@ def test_top_level_plan(sample_raw_dataframe: pd.DataFrame) -> None:
 
 
 def test_plan_enable_disable(sample_raw_dataframe: pd.DataFrame) -> None:
-    cleaning_plan = cleaner.plan(sample_raw_dataframe)
+    cleaning_plan = sanitizepy.plan(sample_raw_dataframe)
     first_step_idx = cleaning_plan.steps[0].index
 
     cleaning_plan.disable(first_step_idx)
@@ -114,14 +114,14 @@ def test_actual_clean_execution(sample_raw_dataframe: pd.DataFrame) -> None:
 
 def test_edge_case_empty_dataframe() -> None:
     empty_df = pd.DataFrame()
-    report = cleaner.inspect(empty_df)
+    report = sanitizepy.inspect(empty_df)
     assert report.health_score == 0
     assert len(report.critical_issues) > 0
 
 
 def test_edge_case_single_cell() -> None:
     single_df = pd.DataFrame({"col": [1]})
-    report = cleaner.inspect(single_df)
+    report = sanitizepy.inspect(single_df)
     assert report.health_score > 50
     assert report.rows == 1
     assert report.columns == 1

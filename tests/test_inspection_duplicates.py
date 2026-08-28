@@ -1,5 +1,5 @@
 """
-Tests for cleaner.inspection.duplicates
+Tests for sanitizepy.inspection.duplicates
 """
 
 from __future__ import annotations
@@ -7,7 +7,7 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from cleaner.inspection.duplicates import (
+from sanitizepy.inspection.duplicates import (
     DuplicateInspectionResult,
     DuplicateInspector,
 )

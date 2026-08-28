@@ -69,8 +69,8 @@ python -m pip install sanitizepy
 For local development or contributing to the codebase, clone the repository and perform an editable installation with development dependencies:
 
 ```bash
-git clone https://github.com/tahahssn/cleaner.git
-cd cleaner
+git clone https://github.com/tahahssn/sanitizepy.git
+cd sanitizepy
 pip install -e .[dev]
 ```
 
@@ -82,7 +82,7 @@ The recommended entry point is the `Cleaner` class or the module-level convenien
 
 ```python
 import pandas as pd
-from cleaner import Cleaner
+from sanitizepy import Cleaner
 
 # Load your dataset
 df = pd.read_csv("your_data.csv")
@@ -120,7 +120,7 @@ print(result.audit_log)           # JSON-serializable audit trail
 ### Convenience Functions
 
 ```python
-from cleaner import inspect, plan, clean
+from sanitizepy import inspect, plan, clean
 
 report = inspect(df)
 cleaning_plan = plan(report)
@@ -134,8 +134,8 @@ result = clean(df, cleaning_plan=cleaning_plan, dry_run=True)
 For granular control, use the individual engines directly:
 
 ```python
-from cleaner.cleaning import CleaningEngine, DropDuplicates, FillMissing
-from cleaner.inspection import MissingValueInspector
+from sanitizepy.cleaning import CleaningEngine, DropDuplicates, FillMissing
+from sanitizepy.inspection import MissingValueInspector
 
 # Read-only inspection
 inspector = MissingValueInspector()

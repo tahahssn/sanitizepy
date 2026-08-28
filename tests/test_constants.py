@@ -1,12 +1,12 @@
 """
-Tests for cleaner.constants
+Tests for sanitizepy.constants
 """
 
 from __future__ import annotations
 
 from pathlib import Path
 
-from cleaner.constants import (
+from sanitizepy.constants import (
     BOOLEAN_DTYPES,
     BYTES_IN_GB,
     BYTES_IN_KB,
@@ -29,7 +29,7 @@ from cleaner.constants import (
 
 class TestPackageConstants:
     def test_package_name(self):
-        assert PACKAGE_NAME == "cleaner"
+        assert PACKAGE_NAME == "sanitizepy"
 
     def test_default_encoding(self):
         assert DEFAULT_ENCODING == "utf-8"

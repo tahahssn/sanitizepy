@@ -1,5 +1,5 @@
 """
-Tests for cleaner.inspection.missing
+Tests for sanitizepy.inspection.missing
 """
 
 from __future__ import annotations
@@ -7,7 +7,7 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from cleaner.inspection.missing import (
+from sanitizepy.inspection.missing import (
     MissingInspectionResult,
     MissingValueInspector,
 )
@@ -135,7 +135,7 @@ class TestMissingValueInspectorThreshold:
     def test_threshold_filters_columns(self):
         result = self.inspector.inspect(self.df, threshold=40.0)
         # 'low' has ~9% missing, 'high' has ~54% missing
-        # threshold=40 → only 'high' should remain in column_reports
+        # threshold=40 â†’ only 'high' should remain in column_reports
         column_names = [r.column for r in result.column_reports]
         assert "low" not in column_names
         assert "high" in column_names

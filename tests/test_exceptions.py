@@ -1,12 +1,12 @@
 """
-Tests for cleaner.exceptions
+Tests for sanitizepy.exceptions
 """
 
 from __future__ import annotations
 
 import pytest
 
-from cleaner.exceptions import (
+from sanitizepy.exceptions import (
     CleanerError,
     CleaningError,
     ConfigurationError,
@@ -59,16 +59,16 @@ class TestCleanerError:
 
 
 class TestConfigurationError:
-    def test_inherits_cleaner_error(self):
+    def test_inherits_sanitizepy_error(self):
         assert issubclass(ConfigurationError, CleanerError)
 
-    def test_can_catch_as_cleaner_error(self):
+    def test_can_catch_as_sanitizepy_error(self):
         with pytest.raises(CleanerError):
             raise ConfigurationError("bad config")
 
 
 class TestValidationErrors:
-    def test_validation_error_inherits_cleaner_error(self):
+    def test_validation_error_inherits_sanitizepy_error(self):
         assert issubclass(ValidationError, CleanerError)
 
     def test_data_validation_error_inherits_validation_error(self):
@@ -77,13 +77,13 @@ class TestValidationErrors:
     def test_schema_validation_error_inherits_validation_error(self):
         assert issubclass(SchemaValidationError, ValidationError)
 
-    def test_data_validation_can_catch_as_cleaner_error(self):
+    def test_data_validation_can_catch_as_sanitizepy_error(self):
         with pytest.raises(CleanerError):
             raise DataValidationError("bad data")
 
 
 class TestEngineErrors:
-    def test_engine_error_inherits_cleaner_error(self):
+    def test_engine_error_inherits_sanitizepy_error(self):
         assert issubclass(EngineError, CleanerError)
 
     def test_engine_init_error_inherits_engine_error(self):
@@ -92,13 +92,13 @@ class TestEngineErrors:
     def test_engine_exec_error_inherits_engine_error(self):
         assert issubclass(EngineExecutionError, EngineError)
 
-    def test_engine_init_can_catch_as_cleaner_error(self):
+    def test_engine_init_can_catch_as_sanitizepy_error(self):
         with pytest.raises(CleanerError):
             raise EngineInitializationError("init failed")
 
 
 class TestInspectionErrors:
-    def test_inspection_error_inherits_cleaner_error(self):
+    def test_inspection_error_inherits_sanitizepy_error(self):
         assert issubclass(InspectionError, CleanerError)
 
     def test_missing_value_inspection_error_inherits(self):
@@ -118,7 +118,7 @@ class TestInspectionErrors:
 
 
 class TestCleaningErrors:
-    def test_cleaning_error_inherits_cleaner_error(self):
+    def test_cleaning_error_inherits_sanitizepy_error(self):
         assert issubclass(CleaningError, CleanerError)
 
     def test_missing_value_cleaning_error_inherits(self):
@@ -135,7 +135,7 @@ class TestCleaningErrors:
 
 
 class TestPreprocessingErrors:
-    def test_preprocessing_error_inherits_cleaner_error(self):
+    def test_preprocessing_error_inherits_sanitizepy_error(self):
         assert issubclass(PreprocessingError, CleanerError)
 
     def test_encoding_error_inherits(self):
@@ -149,7 +149,7 @@ class TestPreprocessingErrors:
 
 
 class TestRuleErrors:
-    def test_rule_error_inherits_cleaner_error(self):
+    def test_rule_error_inherits_sanitizepy_error(self):
         assert issubclass(RuleError, CleanerError)
 
     def test_rule_validation_error_inherits(self):
@@ -160,7 +160,7 @@ class TestRuleErrors:
 
 
 class TestReportErrors:
-    def test_report_error_inherits_cleaner_error(self):
+    def test_report_error_inherits_sanitizepy_error(self):
         assert issubclass(ReportError, CleanerError)
 
     def test_report_generation_error_inherits(self):
@@ -171,7 +171,7 @@ class TestReportErrors:
 
 
 class TestModelErrors:
-    def test_model_error_inherits_cleaner_error(self):
+    def test_model_error_inherits_sanitizepy_error(self):
         assert issubclass(ModelError, CleanerError)
 
     def test_serialization_error_inherits(self):
@@ -182,7 +182,7 @@ class TestModelErrors:
 
 
 class TestUtilityErrors:
-    def test_utility_error_inherits_cleaner_error(self):
+    def test_utility_error_inherits_sanitizepy_error(self):
         assert issubclass(UtilityError, CleanerError)
 
     def test_filesystem_error_inherits(self):

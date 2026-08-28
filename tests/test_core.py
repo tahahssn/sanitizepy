@@ -1,11 +1,11 @@
 """
-Tests for cleaner.core (Cleaner) and cleaner public API
+Tests for sanitizepy.core (Cleaner) and sanitizepy public API
 """
 
 from __future__ import annotations
 
-import cleaner
-from cleaner import (
+import sanitizepy
+from sanitizepy import (
     DEFAULT_CONFIG,
     VERSION,
     VERSION_INFO,
@@ -17,7 +17,7 @@ from cleaner import (
     EngineError,
     get_version,
 )
-from cleaner.core import Cleaner as CoreCleaner
+from sanitizepy.core import Cleaner as CoreCleaner
 
 
 class TestCleanerInit:
@@ -34,7 +34,7 @@ class TestCleanerInit:
         c = Cleaner(config=custom)
         assert c.config is custom
 
-    def test_config_property_returns_cleaner_config(self):
+    def test_config_property_returns_sanitizepy_config(self):
         c = Cleaner()
         assert isinstance(c.config, CleanerConfig)
 
@@ -46,35 +46,35 @@ class TestCleanerInit:
 
 
 class TestCleanerPublicAPI:
-    def test_cleaner_importable_from_package(self):
-        assert Cleaner is cleaner.Cleaner
+    def test_sanitizepy_importable_from_package(self):
+        assert Cleaner is sanitizepy.Cleaner
 
-    def test_cleaner_config_importable_from_package(self):
-        assert CleanerConfig is cleaner.CleanerConfig
+    def test_sanitizepy_config_importable_from_package(self):
+        assert CleanerConfig is sanitizepy.CleanerConfig
 
     def test_default_config_importable_from_package(self):
-        assert DEFAULT_CONFIG is cleaner.DEFAULT_CONFIG
+        assert DEFAULT_CONFIG is sanitizepy.DEFAULT_CONFIG
 
     def test_version_importable_from_package(self):
-        assert VERSION is cleaner.VERSION
+        assert VERSION is sanitizepy.VERSION
 
     def test_version_info_importable_from_package(self):
-        assert VERSION_INFO is cleaner.VERSION_INFO
+        assert VERSION_INFO is sanitizepy.VERSION_INFO
 
     def test_get_version_importable_from_package(self):
-        assert get_version is cleaner.get_version
+        assert get_version is sanitizepy.get_version
 
-    def test_cleaner_error_importable_from_package(self):
-        assert CleanerError is cleaner.CleanerError
+    def test_sanitizepy_error_importable_from_package(self):
+        assert CleanerError is sanitizepy.CleanerError
 
     def test_configuration_error_importable_from_package(self):
-        assert ConfigurationError is cleaner.ConfigurationError
+        assert ConfigurationError is sanitizepy.ConfigurationError
 
     def test_data_validation_error_importable_from_package(self):
-        assert DataValidationError is cleaner.DataValidationError
+        assert DataValidationError is sanitizepy.DataValidationError
 
     def test_engine_error_importable_from_package(self):
-        assert EngineError is cleaner.EngineError
+        assert EngineError is sanitizepy.EngineError
 
-    def test_core_cleaner_is_same_as_api_cleaner(self):
+    def test_core_sanitizepy_is_same_as_api_sanitizepy(self):
         assert CoreCleaner is Cleaner

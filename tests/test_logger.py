@@ -1,12 +1,12 @@
 """
-Tests for cleaner.logger
+Tests for sanitizepy.logger
 """
 
 from __future__ import annotations
 
 import logging
 
-from cleaner.logger import get_logger, logger
+from sanitizepy.logger import get_logger, logger
 
 
 class TestGetLogger:
@@ -16,15 +16,15 @@ class TestGetLogger:
 
     def test_root_logger_name(self):
         result = get_logger()
-        assert result.name == "cleaner"
+        assert result.name == "sanitizepy"
 
     def test_named_logger_includes_package_prefix(self):
         result = get_logger("MyComponent")
-        assert result.name == "cleaner.MyComponent"
+        assert result.name == "sanitizepy.MyComponent"
 
     def test_none_name_returns_root_logger(self):
         result = get_logger(None)
-        assert result.name == "cleaner"
+        assert result.name == "sanitizepy"
 
     def test_logger_has_handler(self):
         result = get_logger("TestHandler")
@@ -48,5 +48,5 @@ class TestModuleLevelLogger:
     def test_logger_is_logging_logger(self):
         assert isinstance(logger, logging.Logger)
 
-    def test_logger_name_is_cleaner(self):
-        assert logger.name == "cleaner"
+    def test_logger_name_is_sanitizepy(self):
+        assert logger.name == "sanitizepy"

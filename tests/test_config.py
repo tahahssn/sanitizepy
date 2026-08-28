@@ -1,5 +1,5 @@
 """
-Tests for cleaner.config
+Tests for sanitizepy.config
 """
 
 from __future__ import annotations
@@ -8,8 +8,8 @@ from pathlib import Path
 
 import pytest
 
-from cleaner.config import DEFAULT_CONFIG, CleanerConfig
-from cleaner.constants import (
+from sanitizepy.config import DEFAULT_CONFIG, CleanerConfig
+from sanitizepy.constants import (
     DEFAULT_ENCODING,
     DEFAULT_FLOAT_PRECISION,
     DEFAULT_PREVIEW_ROWS,
@@ -109,7 +109,7 @@ class TestCleanerConfigCustomTokens:
 
 
 class TestDefaultConfig:
-    def test_default_config_is_cleaner_config(self):
+    def test_default_config_is_sanitizepy_config(self):
         assert isinstance(DEFAULT_CONFIG, CleanerConfig)
 
     def test_default_config_uses_default_encoding(self):

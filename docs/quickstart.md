@@ -1,38 +1,38 @@
 # Quick Start Guide
 
-This guide introduces the core workflows of `cleaner`: data inspection, cleaning, preprocessing, feature engineering, rule execution, report generation, and pipeline composition.
+This guide introduces the core workflows of `sanitizepy`: data inspection, cleaning, preprocessing, feature engineering, rule execution, report generation, and pipeline composition.
 
 ---
 
 ## 1. Prerequisites & Installation
 
-Ensure `cleaner` is installed in your Python environment:
+Ensure `sanitizepy` is installed in your Python environment:
 
 ```bash
-pip install cleaner
+pip install sanitizepy
 ```
 
-`cleaner` operates primarily on `pandas.DataFrame` objects. Verify your environment:
+`sanitizepy` operates primarily on `pandas.DataFrame` objects. Verify your environment:
 
 ```python
 import pandas as pd
-import cleaner
+import sanitizepy
 
-print(f"Cleaner Version: {cleaner.__version__}")
+print(f"Cleaner Version: {sanitizepy.__version__}")
 ```
 
 ---
 
 ## 2. Public API Imports
 
-`cleaner` provides clean import paths for both high-level entry points and modular engine components:
+`sanitizepy` provides clean import paths for both high-level entry points and modular engine components:
 
 ```python
 # Core Entry Point & Configuration
-from cleaner import Cleaner, CleanerConfig, DEFAULT_CONFIG
+from sanitizepy import Cleaner, CleanerConfig, DEFAULT_CONFIG
 
 # Inspection Submodule
-from cleaner.inspection import (
+from sanitizepy.inspection import (
     DatatypeInspector,
     DuplicateInspector,
     MemoryInspector,
@@ -41,7 +41,7 @@ from cleaner.inspection import (
 )
 
 # Cleaning Submodule
-from cleaner.cleaning import (
+from sanitizepy.cleaning import (
     CleaningEngine,
     DropColumns,
     DropDuplicates,
@@ -51,7 +51,7 @@ from cleaner.cleaning import (
 )
 
 # Preprocessing & Feature Engineering Submodule
-from cleaner.preprocessing import (
+from sanitizepy.preprocessing import (
     ColumnInteraction,
     DatetimeFeatures,
     FeatureEngineeringEngine,
@@ -61,7 +61,7 @@ from cleaner.preprocessing import (
 )
 
 # Rule Submodule
-from cleaner.rules import (
+from sanitizepy.rules import (
     Rule,
     RuleCategory,
     RuleEngine,
@@ -71,7 +71,7 @@ from cleaner.rules import (
 )
 
 # Report Submodule
-from cleaner.reports import (
+from sanitizepy.reports import (
     FileExporter,
     JSONRenderer,
     ReportEngine,
@@ -80,7 +80,7 @@ from cleaner.reports import (
 )
 
 # Pipeline Submodule
-from cleaner.pipeline import (
+from sanitizepy.pipeline import (
     CallableStep,
     PipelineEngine,
     TransformStep,
@@ -95,7 +95,7 @@ The inspection package provides **read-only dataset analysis**. Inspectors inspe
 
 ```python
 import pandas as pd
-from cleaner.inspection import (
+from sanitizepy.inspection import (
     MissingValueInspector,
     DuplicateInspector,
     DatatypeInspector,
@@ -149,7 +149,7 @@ The `CleaningEngine` applies an ordered sequence of deterministic cleaning opera
 
 ```python
 import pandas as pd
-from cleaner.cleaning import (
+from sanitizepy.cleaning import (
     CleaningEngine,
     DropMissingRows,
     DropMissingColumns,
@@ -184,7 +184,7 @@ The `FeatureEngineeringEngine` manages stateful transformation operations using 
 
 ```python
 import pandas as pd
-from cleaner.preprocessing import (
+from sanitizepy.preprocessing import (
     FeatureEngineeringEngine,
     ColumnInteraction,
     RatioFeature,
@@ -226,7 +226,7 @@ The `RuleEngine` evaluates validation rules registered in a `RuleRegistry` again
 
 ```python
 import pandas as pd
-from cleaner.rules import (
+from sanitizepy.rules import (
     RuleEngine,
     RuleRegistry,
     register_builtin_rules,
@@ -274,7 +274,7 @@ The `ReportEngine` accepts processing results or dictionaries and constructs a c
 
 ```python
 import pandas as pd
-from cleaner.reports import (
+from sanitizepy.reports import (
     ReportEngine,
     TextRenderer,
     JSONRenderer,
@@ -317,9 +317,9 @@ The `PipelineEngine` sequences processing steps. Use `CallableStep` for function
 
 ```python
 import pandas as pd
-from cleaner.cleaning import CleaningEngine, DropDuplicates, FillMissing
-from cleaner.preprocessing import ColumnInteraction, FeatureEngineeringEngine
-from cleaner.pipeline import PipelineEngine, CallableStep, TransformStep
+from sanitizepy.cleaning import CleaningEngine, DropDuplicates, FillMissing
+from sanitizepy.preprocessing import ColumnInteraction, FeatureEngineeringEngine
+from sanitizepy.pipeline import PipelineEngine, CallableStep, TransformStep
 
 df = pd.read_csv("your_data.csv")
 
@@ -353,4 +353,4 @@ for step_metric in result.steps:
 
 ## Next Steps
 
-To explore parameter options, method signatures, dataclass fields, and exception hierarchies in detail, proceed to the [API Reference](file:///d:/cleaner/docs/api.md).
+To explore parameter options, method signatures, dataclass fields, and exception hierarchies in detail, proceed to the [API Reference](file:///d:/sanitizepy/docs/api.md).

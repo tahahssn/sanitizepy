@@ -1,30 +1,30 @@
 # API Reference
 
-This document provides technical API documentation for all public entry points, engines, operations, models, dataclasses, and exceptions in `cleaner`.
+This document provides technical API documentation for all public entry points, engines, operations, models, dataclasses, and exceptions in `sanitizepy`.
 
 ---
 
 ## Table of Contents
 
 1. [Top-Level Package API](#1-top-level-package-api)
-2. [Data Inspection (`cleaner.inspection`)](#2-data-inspection-cleanerinspection)
-3. [Data Cleaning (`cleaner.cleaning`)](#3-data-cleaning-cleanercleaning)
-4. [Preprocessing & Feature Engineering (`cleaner.preprocessing`)](#4-preprocessing--feature-engineering-cleanerpreprocessing)
-5. [Rule Engine (`cleaner.rules`)](#5-rule-engine-cleanerrules)
-6. [Report Engine (`cleaner.reports`)](#6-report-engine-cleanerreports)
-7. [Pipeline Engine (`cleaner.pipeline`)](#7-pipeline-engine-cleanerpipeline)
-8. [Base Engine & Data Models (`cleaner.engine`, `cleaner.models`)](#8-base-engine--data-models)
-9. [Exceptions (`cleaner.exceptions`)](#9-exceptions-cleanerexceptions)
-10. [Logging (`cleaner.logger`)](#10-logging-cleanerlogger)
+2. [Data Inspection (`sanitizepy.inspection`)](#2-data-inspection-sanitizepyinspection)
+3. [Data Cleaning (`sanitizepy.cleaning`)](#3-data-cleaning-sanitizepycleaning)
+4. [Preprocessing & Feature Engineering (`sanitizepy.preprocessing`)](#4-preprocessing--feature-engineering-sanitizepypreprocessing)
+5. [Rule Engine (`sanitizepy.rules`)](#5-rule-engine-sanitizepyrules)
+6. [Report Engine (`sanitizepy.reports`)](#6-report-engine-sanitizepyreports)
+7. [Pipeline Engine (`sanitizepy.pipeline`)](#7-pipeline-engine-sanitizepypipeline)
+8. [Base Engine & Data Models (`sanitizepy.engine`, `sanitizepy.models`)](#8-base-engine--data-models)
+9. [Exceptions (`sanitizepy.exceptions`)](#9-exceptions-sanitizepyexceptions)
+10. [Logging (`sanitizepy.logger`)](#10-logging-sanitizepylogger)
 
 ---
 
 ## 1. Top-Level Package API
 
-Imports available directly from `cleaner`:
+Imports available directly from `sanitizepy`:
 
 ```python
-from cleaner import (
+from sanitizepy import (
     Cleaner,
     CleanerConfig,
     DEFAULT_CONFIG,
@@ -89,16 +89,16 @@ Pre-instantiated default instance of `CleanerConfig`.
 - `VERSION` (`str`): Current package version string (e.g., `"0.1.0"`).
 - `VERSION_INFO` (`tuple[int, int, int]`): Version tuple (e.g., `(0, 1, 0)`).
 - `get_version() -> str`: Function returning `VERSION`.
-- `cleaner.__version__`: Package version string.
+- `sanitizepy.__version__`: Package version string.
 
 ---
 
-## 2. Data Inspection (`cleaner.inspection`)
+## 2. Data Inspection (`sanitizepy.inspection`)
 
 Import path:
 
 ```python
-from cleaner.inspection import (
+from sanitizepy.inspection import (
     MissingValueInspector,
     DuplicateInspector,
     DatatypeInspector,
@@ -205,12 +205,12 @@ class StatisticsInspector:
 
 ---
 
-## 3. Data Cleaning (`cleaner.cleaning`)
+## 3. Data Cleaning (`sanitizepy.cleaning`)
 
 Import path:
 
 ```python
-from cleaner.cleaning import (
+from sanitizepy.cleaning import (
     CleaningEngine,
     CleaningOperation,
     DropMissingRows,
@@ -293,12 +293,12 @@ DropColumns(columns: list[str])
 
 ---
 
-## 4. Preprocessing & Feature Engineering (`cleaner.preprocessing`)
+## 4. Preprocessing & Feature Engineering (`sanitizepy.preprocessing`)
 
 Import path:
 
 ```python
-from cleaner.preprocessing import (
+from sanitizepy.preprocessing import (
     FeatureEngineeringEngine,
     FeatureOperation,
     ColumnInteraction,
@@ -382,12 +382,12 @@ DatetimeFeatures(column: str, features: Sequence[str], prefix: str | None = None
 
 ---
 
-## 5. Rule Engine (`cleaner.rules`)
+## 5. Rule Engine (`sanitizepy.rules`)
 
 Import path:
 
 ```python
-from cleaner.rules import (
+from sanitizepy.rules import (
     RuleEngine,
     RuleRegistry,
     BaseRule,
@@ -447,12 +447,12 @@ Registers 10 standard built-in rules into the supplied `RuleRegistry`: `"missing
 
 ---
 
-## 6. Report Engine (`cleaner.reports`)
+## 6. Report Engine (`sanitizepy.reports`)
 
 Import path:
 
 ```python
-from cleaner.reports import (
+from sanitizepy.reports import (
     ReportEngine,
     Report,
     ReportSection,
@@ -498,12 +498,12 @@ class ReportEngine(BaseEngine):
 
 ---
 
-## 7. Pipeline Engine (`cleaner.pipeline`)
+## 7. Pipeline Engine (`sanitizepy.pipeline`)
 
 Import path:
 
 ```python
-from cleaner.pipeline import (
+from sanitizepy.pipeline import (
     PipelineEngine,
     PipelineStep,
     CallableStep,
@@ -542,7 +542,7 @@ class PipelineEngine:
 
 ## 8. Base Engine & Data Models
 
-### `BaseEngine` (`cleaner.engine.base`)
+### `BaseEngine` (`sanitizepy.engine.base`)
 
 Abstract base class for all processing engines.
 
@@ -557,7 +557,7 @@ class BaseEngine(ABC):
     def run(self, *args: Any, **kwargs: Any) -> Any: ...
 ```
 
-### Core Models (`cleaner.models.base`)
+### Core Models (`sanitizepy.models.base`)
 
 Pydantic models for validated internal data structures:
 
@@ -572,12 +572,12 @@ Pydantic models for validated internal data structures:
 
 ---
 
-## 9. Exceptions (`cleaner.exceptions`)
+## 9. Exceptions (`sanitizepy.exceptions`)
 
 Import path:
 
 ```python
-from cleaner.exceptions import CleanerError, ConfigurationError, DataValidationError, EngineError
+from sanitizepy.exceptions import CleanerError, ConfigurationError, DataValidationError, EngineError
 ```
 
 All exceptions inherit from `CleanerError`:
@@ -622,15 +622,15 @@ CleanerError
 
 ---
 
-## 10. Logging (`cleaner.logger`)
+## 10. Logging (`sanitizepy.logger`)
 
 Import path:
 
 ```python
-from cleaner.logger import get_logger, logger
+from sanitizepy.logger import get_logger, logger
 ```
 
-- `get_logger(name: str | None = None) -> logging.Logger`: Returns a configured logger instance under the `"cleaner"` namespace (e.g. `"cleaner.CleaningEngine"`).
+- `get_logger(name: str | None = None) -> logging.Logger`: Returns a configured logger instance under the `"sanitizepy"` namespace (e.g. `"sanitizepy.CleaningEngine"`).
 - `logger`: Root package logger instance (`logging.Logger`).
 - **Format**: `%(asctime)s | %(levelname)s | %(name)s | %(message)s`
 - **Date Format**: `%Y-%m-%d %H:%M:%S`

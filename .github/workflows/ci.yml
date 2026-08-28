@@ -40,7 +40,7 @@ jobs:
 
     - name: Run tests with pytest
       run: |
-        pytest --cov=cleaner --cov-report=xml
+        pytest --cov=sanitizepy --cov-report=xml
 
     - name: Upload coverage artifact
       uses: actions/upload-artifact@v4

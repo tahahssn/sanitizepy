@@ -1,5 +1,5 @@
 """
-Tests for cleaner.inspection.memory
+Tests for sanitizepy.inspection.memory
 """
 
 from __future__ import annotations
@@ -7,7 +7,7 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from cleaner.inspection.memory import (
+from sanitizepy.inspection.memory import (
     MemoryColumnReport,
     MemoryInspectionResult,
     MemoryInspector,
@@ -128,7 +128,7 @@ class TestMemoryInspectorIntegerDowncast:
         self.result = self.inspector.inspect(self.df)
 
     def test_integer_column_has_estimated_bytes(self):
-        # estimated_bytes_after is always computed — just verify it is positive
+        # estimated_bytes_after is always computed â€” just verify it is positive
         report = self.result.reports[0]
         assert report.estimated_bytes_after > 0
 

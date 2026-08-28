@@ -1,5 +1,5 @@
 """
-Tests for cleaner.preprocessing.operations
+Tests for sanitizepy.preprocessing.operations
 """
 
 from __future__ import annotations
@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from cleaner.preprocessing.operations import (
+from sanitizepy.preprocessing.operations import (
     ColumnInteraction,
     DatetimeFeatures,
     LogFeature,

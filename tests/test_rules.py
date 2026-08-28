@@ -1,5 +1,5 @@
 """
-Tests for cleaner.rules
+Tests for sanitizepy.rules
 """
 
 from __future__ import annotations
@@ -8,11 +8,11 @@ import pandas as pd
 import pytest
 from pydantic import ValidationError
 
-from cleaner.rules.base import Rule
-from cleaner.rules.builtins import register_builtin_rules
-from cleaner.rules.registry import RuleRegistry
-from cleaner.rules.rule import RuleCategory, RuleResult, RuleSeverity
-from cleaner.rules.validators import (
+from sanitizepy.rules.base import Rule
+from sanitizepy.rules.builtins import register_builtin_rules
+from sanitizepy.rules.registry import RuleRegistry
+from sanitizepy.rules.rule import RuleCategory, RuleResult, RuleSeverity
+from sanitizepy.rules.validators import (
     validate_callback,
     validate_description,
     validate_enabled,

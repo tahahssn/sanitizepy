@@ -6,8 +6,8 @@ Thank you for your interest in contributing to `sanitizepy`! We welcome contribu
 
 1. **Fork and Clone the Repository**:
    ```bash
-   git clone https://github.com/tahahssn/cleaner.git
-   cd cleaner
+   git clone https://github.com/tahahssn/sanitizepy.git
+   cd sanitizepy
    ```
 
 2. **Create a Virtual Environment**:

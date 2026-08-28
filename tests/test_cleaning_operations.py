@@ -1,5 +1,5 @@
 """
-Tests for cleaner.cleaning.operations
+Tests for sanitizepy.cleaning.operations
 """
 
 from __future__ import annotations
@@ -7,7 +7,7 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from cleaner.cleaning.operations import (
+from sanitizepy.cleaning.operations import (
     DropColumns,
     DropDuplicates,
     DropMissingColumns,

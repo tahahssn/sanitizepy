@@ -1,11 +1,11 @@
 """
-Tests for cleaner.version
+Tests for sanitizepy.version
 """
 
 from __future__ import annotations
 
-import cleaner
-from cleaner.version import VERSION, VERSION_INFO, get_version
+import sanitizepy
+from sanitizepy.version import VERSION, VERSION_INFO, get_version
 
 
 class TestVersion:
@@ -43,4 +43,4 @@ class TestVersion:
         assert get_version() == VERSION
 
     def test_package_dunder_version(self):
-        assert cleaner.__version__ == VERSION
+        assert sanitizepy.__version__ == VERSION

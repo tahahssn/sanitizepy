@@ -9,7 +9,7 @@ from time import perf_counter
 import numpy as np
 import pandas as pd
 
-from cleaner.preprocessing import (
+from sanitizepy.preprocessing import (
     ColumnInteraction,
     DatetimeFeatures,
     FeatureEngineeringEngine,

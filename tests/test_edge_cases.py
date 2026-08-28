@@ -13,8 +13,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from cleaner import Cleaner
-from cleaner.cleaning import (
+from sanitizepy import Cleaner
+from sanitizepy.cleaning import (
     CleaningEngine,
     CleaningResult,
     DropColumns,
@@ -23,8 +23,8 @@ from cleaner.cleaning import (
     FillMissing,
     OperationResult,
 )
-from cleaner.inspection.detector import IssueDetector
-from cleaner.inspection.health import DatasetHealthReport
+from sanitizepy.inspection.detector import IssueDetector
+from sanitizepy.inspection.health import DatasetHealthReport
 
 # ---------------------------------------------------------------------------
 # IssueDetector edge cases

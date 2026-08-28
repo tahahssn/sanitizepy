@@ -1,5 +1,5 @@
 """
-Tests for cleaner.cleaning.base (CleaningOperation)
+Tests for sanitizepy.cleaning.base (CleaningOperation)
 """
 
 from __future__ import annotations
@@ -7,7 +7,7 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from cleaner.cleaning.base import CleaningOperation
+from sanitizepy.cleaning.base import CleaningOperation
 
 
 class _ConcreteOp(CleaningOperation):

@@ -1,5 +1,5 @@
 """
-Tests for cleaner.inspection.statistics
+Tests for sanitizepy.inspection.statistics
 """
 
 from __future__ import annotations
@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from cleaner.inspection.statistics import (
+from sanitizepy.inspection.statistics import (
     StatisticsInspectionResult,
     StatisticsInspector,
 )

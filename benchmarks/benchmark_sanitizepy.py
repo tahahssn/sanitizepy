@@ -6,10 +6,10 @@ from __future__ import annotations
 
 from time import perf_counter
 
-from cleaner import Cleaner, CleanerConfig
+from sanitizepy import Cleaner, CleanerConfig
 
 
-def benchmark_cleaner_initialization(
+def benchmark_sanitizepy_initialization(
     iterations: int = 10_000,
 ) -> float:
     """
@@ -38,7 +38,7 @@ def benchmark_cleaner_initialization(
     return elapsed / iterations
 
 
-def benchmark_cleaner_with_custom_config(
+def benchmark_sanitizepy_with_custom_config(
     iterations: int = 10_000,
 ) -> float:
     """
@@ -89,8 +89,8 @@ def benchmark_config_validation(
 
 def main() -> None:
     """Run the Cleaner core benchmark suite."""
-    init_avg = benchmark_cleaner_initialization()
-    custom_avg = benchmark_cleaner_with_custom_config()
+    init_avg = benchmark_sanitizepy_initialization()
+    custom_avg = benchmark_sanitizepy_with_custom_config()
     config_avg = benchmark_config_validation()
 
     print("=== Cleaner Core Benchmarks ===")

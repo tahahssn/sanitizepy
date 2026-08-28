@@ -9,9 +9,9 @@ from time import perf_counter
 import numpy as np
 import pandas as pd
 
-from cleaner.cleaning import DropDuplicates, FillMissing
-from cleaner.pipeline import CallableStep, PipelineEngine, TransformStep
-from cleaner.preprocessing import (
+from sanitizepy.cleaning import DropDuplicates, FillMissing
+from sanitizepy.pipeline import CallableStep, PipelineEngine, TransformStep
+from sanitizepy.preprocessing import (
     ColumnInteraction,
     FeatureEngineeringEngine,
     LogFeature,

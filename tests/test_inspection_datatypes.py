@@ -1,5 +1,5 @@
 """
-Tests for cleaner.inspection.datatypes
+Tests for sanitizepy.inspection.datatypes
 """
 
 from __future__ import annotations
@@ -7,7 +7,7 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from cleaner.inspection.datatypes import (
+from sanitizepy.inspection.datatypes import (
     ColumnTypeReport,
     DatatypeInspectionResult,
     DatatypeInspector,
