@@ -11,9 +11,10 @@ from cleaner.exceptions import (
     CleaningError,
     ConfigurationError,
     DataTypeConversionError,
+    DataTypeInspectionError,
     DataValidationError,
-    DeserializationError,
     DependencyError,
+    DeserializationError,
     DuplicateCleaningError,
     DuplicateInspectionError,
     EncodingError,
@@ -41,7 +42,6 @@ from cleaner.exceptions import (
     StatisticsInspectionError,
     UtilityError,
     ValidationError,
-    DataTypeInspectionError,
 )
 
 

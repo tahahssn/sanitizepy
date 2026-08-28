@@ -4,19 +4,17 @@ Tests for cleaner.core (Cleaner) and cleaner public API
 
 from __future__ import annotations
 
-import pytest
-
 import cleaner
 from cleaner import (
+    DEFAULT_CONFIG,
+    VERSION,
+    VERSION_INFO,
     Cleaner,
     CleanerConfig,
     CleanerError,
     ConfigurationError,
     DataValidationError,
-    DEFAULT_CONFIG,
     EngineError,
-    VERSION,
-    VERSION_INFO,
     get_version,
 )
 from cleaner.core import Cleaner as CoreCleaner

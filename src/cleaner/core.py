@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import logging
+
 import pandas as pd
 
-from cleaner.cleaning.engine import CleaningEngine, CleaningResult
+from cleaner.cleaning.engine import CleaningResult
 from cleaner.cleaning.plan import CleaningPlan
-from cleaner.config import CleanerConfig, DEFAULT_CONFIG
+from cleaner.config import DEFAULT_CONFIG, CleanerConfig
 from cleaner.inspection.detector import IssueDetector
 from cleaner.inspection.health import DatasetHealthReport
 from cleaner.logger import get_logger
@@ -34,7 +36,7 @@ class Cleaner:
         return self._config
 
     @property
-    def logger(self):
+    def logger(self) -> logging.Logger:
         """
         Return the package logger.
         """
@@ -48,17 +50,13 @@ class Cleaner:
         self._logger.info("Executing dataset health inspection.")
         return self._detector.inspect(dataframe)
 
-    def plan(
-        self, target: pd.DataFrame | DatasetHealthReport
-    ) -> CleaningPlan:
+    def plan(self, target: pd.DataFrame | DatasetHealthReport) -> CleaningPlan:
         """
         Generate a previewable CleaningPlan from a DatasetHealthReport or DataFrame.
         """
         self._logger.info("Generating cleaning plan.")
         report = (
-            target
-            if isinstance(target, DatasetHealthReport)
-            else self.inspect(target)
+            target if isinstance(target, DatasetHealthReport) else self.inspect(target)
         )
         return CleaningPlan.from_report(report)
 
@@ -71,9 +69,7 @@ class Cleaner:
         """
         Apply a CleaningPlan or automatically generated plan to a DataFrame.
         """
-        self._logger.info(
-            f"Executing data cleaning (dry_run={dry_run})."
-        )
+        self._logger.info(f"Executing data cleaning (dry_run={dry_run}).")
         active_plan = plan or self.plan(dataframe)
         return active_plan.apply(dataframe, dry_run=dry_run)
 

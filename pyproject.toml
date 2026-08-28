@@ -66,11 +66,11 @@ where = ["src"]
 
 [tool.black]
 line-length = 88
-target-version = ["py313"]
+target-version = ["py311"]
 
 [tool.ruff]
 line-length = 88
-target-version = "py313"
+target-version = "py311"
 
 [tool.ruff.lint]
 select = [
@@ -87,7 +87,7 @@ select = [
 ignore = []
 
 [tool.mypy]
-python_version = "3.13"
+python_version = "3.11"
 strict = true
 warn_return_any = true
 warn_unused_configs = true

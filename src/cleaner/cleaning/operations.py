@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
 import pandas as pd
 
@@ -24,9 +24,7 @@ class DropMissingRows(CleaningOperation):
             ]
 
             if missing_columns:
-                raise KeyError(
-                    f"Columns not found in dataframe: {missing_columns}"
-                )
+                raise KeyError(f"Columns not found in dataframe: {missing_columns}")
 
         return dataframe.dropna(subset=self.subset).copy()
 
@@ -58,9 +56,7 @@ class DropMissingColumns(CleaningOperation):
             ]
 
             if missing_columns:
-                raise KeyError(
-                    f"Columns not found in dataframe: {missing_columns}"
-                )
+                raise KeyError(f"Columns not found in dataframe: {missing_columns}")
 
         return dataframe.drop(columns=columns).copy()
 
@@ -98,14 +94,10 @@ class FillMissing(CleaningOperation):
             ]
 
             if missing_columns:
-                raise KeyError(
-                    f"Columns not found in dataframe: {missing_columns}"
-                )
+                raise KeyError(f"Columns not found in dataframe: {missing_columns}")
 
             result = dataframe.copy()
-            result.loc[:, self.subset] = result.loc[:, self.subset].fillna(
-                self.value
-            )
+            result.loc[:, self.subset] = result.loc[:, self.subset].fillna(self.value)
             return result
 
         return dataframe.fillna(self.value).copy()
@@ -126,12 +118,10 @@ class DropDuplicates(CleaningOperation):
     def __init__(
         self,
         subset: list[str] | None = None,
-        keep: str | bool = "first",
+        keep: Literal["first", "last"] | Literal[False] = "first",
     ) -> None:
         if keep not in {"first", "last", False}:
-            raise ValueError(
-                "keep must be one of: 'first', 'last', or False"
-            )
+            raise ValueError("keep must be one of: 'first', 'last', or False")
 
         self.subset = subset
         self.keep = keep
@@ -145,9 +135,7 @@ class DropDuplicates(CleaningOperation):
             ]
 
             if missing_columns:
-                raise KeyError(
-                    f"Columns not found in dataframe: {missing_columns}"
-                )
+                raise KeyError(f"Columns not found in dataframe: {missing_columns}")
 
         return dataframe.drop_duplicates(
             subset=self.subset,
@@ -181,9 +169,7 @@ class DropColumns(CleaningOperation):
         ]
 
         if missing_columns:
-            raise KeyError(
-                f"Columns not found in dataframe: {missing_columns}"
-            )
+            raise KeyError(f"Columns not found in dataframe: {missing_columns}")
 
         return dataframe.drop(columns=self.columns).copy()
 

@@ -14,8 +14,8 @@ Users can simply import models directly:
 from .base import (
     BaseCleanerModel,
     ColumnReference,
-    DataShape,
     DatasetInfo,
+    DataShape,
     ExecutionTime,
     IdentifiedModel,
     MetadataModel,
@@ -23,7 +23,6 @@ from .base import (
     TimestampedModel,
     VersionInfo,
 )
-
 from .inspection import (
     CategoricalStatistics,
     ColumnInspection,
@@ -37,7 +36,6 @@ from .inspection import (
     NumericStatistics,
     Severity,
 )
-
 from .recommendations import (
     Recommendation,
     RecommendationAction,
@@ -49,7 +47,6 @@ from .recommendations import (
     RecommendationResult,
     RecommendationSummary,
 )
-
 from .report import (
     CleanerReport,
     ExecutionMetadata,

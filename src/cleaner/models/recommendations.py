@@ -10,14 +10,14 @@ suggested before any modification is performed.
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import Field
 
 from cleaner.models.base import BaseCleanerModel, ColumnReference
 
 
-class RecommendationCategory(str, Enum):
+class RecommendationCategory(StrEnum):
     """
     High-level recommendation categories.
     """
@@ -35,7 +35,7 @@ class RecommendationCategory(str, Enum):
     GENERAL = "general"
 
 
-class RecommendationPriority(str, Enum):
+class RecommendationPriority(StrEnum):
     """
     Recommendation importance.
     """
@@ -46,7 +46,7 @@ class RecommendationPriority(str, Enum):
     CRITICAL = "critical"
 
 
-class RecommendationAction(str, Enum):
+class RecommendationAction(StrEnum):
     """
     Supported actions.
 

@@ -88,9 +88,7 @@ class DuplicateInspector:
 
         duplicate_dataframe = dataframe.loc[duplicate_mask]
 
-        duplicate_indices = tuple(
-            duplicate_dataframe.index.tolist()
-        )
+        duplicate_indices = tuple(duplicate_dataframe.index.tolist())
 
         total_rows = len(dataframe)
 
@@ -137,9 +135,7 @@ class DuplicateInspector:
         Return True if duplicate rows exist.
         """
 
-        return bool(
-            dataframe.duplicated(subset=subset).any()
-        )
+        return bool(dataframe.duplicated(subset=subset).any())
 
     def duplicate_columns(
         self,

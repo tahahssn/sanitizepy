@@ -7,10 +7,11 @@ Base engine shared by all processing components.
 
 from __future__ import annotations
 
+import logging
 from abc import ABC, abstractmethod
 from typing import Any
 
-from ..config import CleanerConfig, DEFAULT_CONFIG
+from ..config import DEFAULT_CONFIG, CleanerConfig
 from ..logger import get_logger
 
 
@@ -37,7 +38,7 @@ class BaseEngine(ABC):
         return self._config
 
     @property
-    def logger(self):
+    def logger(self) -> logging.Logger:
         """
         Return the engine logger.
         """

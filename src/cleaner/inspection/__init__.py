@@ -21,27 +21,23 @@ from .datatypes import (
     DatatypeInspector,
     DatatypeSummary,
 )
-
 from .duplicates import (
     DuplicateInspectionResult,
     DuplicateInspector,
     DuplicateSummary,
 )
-
 from .memory import (
     MemoryColumnReport,
     MemoryInspectionResult,
     MemoryInspector,
     MemorySummary,
 )
-
 from .missing import (
     MissingColumnReport,
     MissingInspectionResult,
     MissingSummary,
     MissingValueInspector,
 )
-
 from .statistics import (
     NumericColumnStatistics,
     StatisticsInspectionResult,
@@ -55,24 +51,20 @@ __all__ = [
     "MissingInspectionResult",
     "MissingSummary",
     "MissingColumnReport",
-
     # Duplicates
     "DuplicateInspector",
     "DuplicateInspectionResult",
     "DuplicateSummary",
-
     # Datatypes
     "DatatypeInspector",
     "DatatypeInspectionResult",
     "DatatypeSummary",
     "ColumnTypeReport",
-
     # Memory
     "MemoryInspector",
     "MemoryInspectionResult",
     "MemorySummary",
     "MemoryColumnReport",
-
     # Statistics
     "StatisticsInspector",
     "StatisticsInspectionResult",

@@ -8,6 +8,7 @@ Report data structures produced by the report engine.
 from __future__ import annotations
 
 from collections.abc import Mapping
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any
 
@@ -46,9 +47,7 @@ class Report:
     title: str
     sections: tuple[ReportSection, ...] = field(default_factory=tuple)
     metadata: Mapping[str, Any] = field(default_factory=dict)
-    created_at: datetime = field(
-        default_factory=lambda: datetime.now(UTC)
-    )
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     def __post_init__(self) -> None:
         if not self.title:

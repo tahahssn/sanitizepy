@@ -1,5 +1,5 @@
 from .cleaning import CleaningEngine, CleaningPlan, CleaningResult, OperationResult
-from .config import CleanerConfig, DEFAULT_CONFIG
+from .config import DEFAULT_CONFIG, CleanerConfig
 from .core import Cleaner, clean, inspect, plan
 from .exceptions import (
     CleanerError,

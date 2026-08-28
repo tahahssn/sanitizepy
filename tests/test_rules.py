@@ -6,8 +6,9 @@ from __future__ import annotations
 
 import pandas as pd
 import pytest
+from pydantic import ValidationError
 
-from cleaner.rules.base import BaseRule, Rule
+from cleaner.rules.base import Rule
 from cleaner.rules.builtins import register_builtin_rules
 from cleaner.rules.registry import RuleRegistry
 from cleaner.rules.rule import RuleCategory, RuleResult, RuleSeverity
@@ -19,10 +20,10 @@ from cleaner.rules.validators import (
     validate_rule_name,
 )
 
-
 # ---------------------------------------------------------------------------
 # RuleSeverity
 # ---------------------------------------------------------------------------
+
 
 class TestRuleSeverity:
     def test_info_value(self):
@@ -45,6 +46,7 @@ class TestRuleSeverity:
 # RuleCategory
 # ---------------------------------------------------------------------------
 
+
 class TestRuleCategory:
     def test_data_quality_value(self):
         assert RuleCategory.DATA_QUALITY.value == "data_quality"
@@ -57,15 +59,16 @@ class TestRuleCategory:
 # RuleResult
 # ---------------------------------------------------------------------------
 
+
 class TestRuleResult:
     def _make_result(self, **kwargs):
-        defaults = dict(
-            rule="test_rule",
-            passed=True,
-            severity=RuleSeverity.INFO,
-            category=RuleCategory.DATA_QUALITY,
-            message="All good",
-        )
+        defaults = {
+            "rule": "test_rule",
+            "passed": True,
+            "severity": RuleSeverity.INFO,
+            "category": RuleCategory.DATA_QUALITY,
+            "message": "All good",
+        }
         defaults.update(kwargs)
         return RuleResult(**defaults)
 
@@ -94,7 +97,7 @@ class TestRuleResult:
         assert r.affected_rows == 5
 
     def test_negative_affected_rows_raises(self):
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             self._make_result(affected_rows=-1)
 
     def test_metadata_default_empty(self):
@@ -103,17 +106,18 @@ class TestRuleResult:
 
     def test_is_frozen(self):
         r = self._make_result()
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             r.rule = "changed"  # type: ignore[misc]
 
     def test_extra_fields_forbidden(self):
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             self._make_result(unknown_field="value")
 
 
 # ---------------------------------------------------------------------------
 # BaseRule / Rule
 # ---------------------------------------------------------------------------
+
 
 class TestBaseRule:
     def test_rule_name_property(self):
@@ -150,6 +154,7 @@ class TestBaseRule:
 # ---------------------------------------------------------------------------
 # RuleRegistry
 # ---------------------------------------------------------------------------
+
 
 class TestRuleRegistry:
     def _make_registry(self):
@@ -251,6 +256,7 @@ class TestRuleRegistry:
 # BuiltIn Rules
 # ---------------------------------------------------------------------------
 
+
 class TestBuiltinRules:
     def test_register_builtin_rules_populates_registry(self):
         registry = RuleRegistry()
@@ -284,6 +290,7 @@ class TestBuiltinRules:
 # ---------------------------------------------------------------------------
 # Validators
 # ---------------------------------------------------------------------------
+
 
 class TestValidateRuleName:
     def test_valid_name_passes(self):

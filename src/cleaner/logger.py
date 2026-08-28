@@ -18,9 +18,7 @@ from .constants import PACKAGE_NAME
 
 _DEFAULT_LOG_LEVEL: Final[int] = logging.INFO
 
-_DEFAULT_LOG_FORMAT: Final[str] = (
-    "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
-)
+_DEFAULT_LOG_FORMAT: Final[str] = "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
 
 _DEFAULT_DATE_FORMAT: Final[str] = "%Y-%m-%d %H:%M:%S"
 
@@ -28,6 +26,7 @@ _DEFAULT_DATE_FORMAT: Final[str] = "%Y-%m-%d %H:%M:%S"
 # ============================================================================
 # LOGGER FACTORY
 # ============================================================================
+
 
 def get_logger(name: str | None = None) -> logging.Logger:
     """

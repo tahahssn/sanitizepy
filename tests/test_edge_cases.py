@@ -19,14 +19,12 @@ from cleaner.cleaning import (
     CleaningResult,
     DropColumns,
     DropDuplicates,
-    DropMissingColumns,
     DropMissingRows,
     FillMissing,
     OperationResult,
 )
 from cleaner.inspection.detector import IssueDetector
 from cleaner.inspection.health import DatasetHealthReport
-
 
 # ---------------------------------------------------------------------------
 # IssueDetector edge cases
@@ -62,10 +60,12 @@ class TestIssueDetectorEdgeCases:
         assert report.health_score < 50
 
     def test_no_issues_clean_data(self) -> None:
-        df = pd.DataFrame({
-            "id": [1, 2, 3, 4, 5],
-            "value": [10.1, 20.2, 30.3, 40.4, 50.5],
-        })
+        df = pd.DataFrame(
+            {
+                "id": [1, 2, 3, 4, 5],
+                "value": [10.1, 20.2, 30.3, 40.4, 50.5],
+            }
+        )
         report = IssueDetector().inspect(df)
         assert report.health_score >= 80
         assert len(report.critical_issues) == 0
@@ -100,10 +100,18 @@ class TestIssueDetectorEdgeCases:
         assert len(casing_issues) >= 1
 
     def test_datetime_string_detection(self) -> None:
-        df = pd.DataFrame({"date": [
-            "2023-01-01", "2023-02-15", "2023-03-20",
-            "2023-04-10", "2023-05-05", "2023-06-30",
-        ]})
+        df = pd.DataFrame(
+            {
+                "date": [
+                    "2023-01-01",
+                    "2023-02-15",
+                    "2023-03-20",
+                    "2023-04-10",
+                    "2023-05-05",
+                    "2023-06-30",
+                ]
+            }
+        )
         report = IssueDetector().inspect(df)
         dt_issues = [i for i in report.issues if "Datetime" in i.title]
         assert len(dt_issues) >= 1
@@ -149,20 +157,24 @@ class TestCleaningEngineEdgeCases:
 
     def test_dry_run_returns_original_shape(self) -> None:
         df = pd.DataFrame({"a": [1, 1, 2], "b": [None, 5, 6]})
-        engine = CleaningEngine([
-            DropDuplicates(),
-            DropMissingRows(),
-        ])
+        engine = CleaningEngine(
+            [
+                DropDuplicates(),
+                DropMissingRows(),
+            ]
+        )
         result = engine.run_with_result(df, dry_run=True)
         assert result.dry_run is True
         assert result.data.shape == df.shape
 
     def test_real_run_changes_shape(self) -> None:
         df = pd.DataFrame({"a": [1, 1, 2], "b": [None, 5, 6]})
-        engine = CleaningEngine([
-            DropDuplicates(),
-            DropMissingRows(),
-        ])
+        engine = CleaningEngine(
+            [
+                DropDuplicates(),
+                DropMissingRows(),
+            ]
+        )
         result = engine.run_with_result(df, dry_run=False)
         assert result.dry_run is False
         assert result.data.shape[0] < df.shape[0]

@@ -4,14 +4,11 @@ Tests for cleaner.inspection.missing
 
 from __future__ import annotations
 
-import numpy as np
 import pandas as pd
 import pytest
 
 from cleaner.inspection.missing import (
-    MissingColumnReport,
     MissingInspectionResult,
-    MissingSummary,
     MissingValueInspector,
 )
 

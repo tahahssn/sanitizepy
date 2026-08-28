@@ -8,7 +8,6 @@ generated from DatasetHealthReport recommendations or manual user configuration.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
 
 import pandas as pd
 from rich.console import Console
@@ -19,7 +18,6 @@ from cleaner.cleaning.engine import CleaningEngine, CleaningResult
 from cleaner.cleaning.operations import (
     DropColumns,
     DropDuplicates,
-    DropMissingColumns,
     DropMissingRows,
     FillMissing,
 )
@@ -54,7 +52,8 @@ class CleaningPlan:
     @classmethod
     def from_report(cls, report: DatasetHealthReport) -> CleaningPlan:
         """
-        Construct a CleaningPlan automatically from a DatasetHealthReport's recommendations.
+        Construct a CleaningPlan automatically from a DatasetHealthReport's
+        recommendations.
         """
         steps: list[PlanStep] = []
         idx = 1
@@ -70,12 +69,16 @@ class CleaningPlan:
                 op = DropDuplicates(keep="first")
             elif rec.action == RecommendationAction.DROP_COLUMN and col_name:
                 op = DropColumns(columns=[col_name])
-            elif rec.action in (
-                RecommendationAction.FILL_MEDIAN,
-                RecommendationAction.FILL_MEAN,
-                RecommendationAction.FILL_CONSTANT,
-                RecommendationAction.FILL_MODE,
-            ) and col_name:
+            elif (
+                rec.action
+                in (
+                    RecommendationAction.FILL_MEDIAN,
+                    RecommendationAction.FILL_MEAN,
+                    RecommendationAction.FILL_CONSTANT,
+                    RecommendationAction.FILL_MODE,
+                )
+                and col_name
+            ):
                 op = FillMissing(value=0.0, subset=[col_name])
             elif rec.action == RecommendationAction.DROP_ROWS and col_name:
                 op = DropMissingRows(subset=[col_name])

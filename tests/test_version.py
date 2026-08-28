@@ -33,7 +33,7 @@ class TestVersion:
 
     def test_version_info_matches_version(self):
         major, minor, patch = VERSION_INFO
-        assert VERSION == f"{major}.{minor}.{patch}"
+        assert f"{major}.{minor}.{patch}" == VERSION
 
     def test_get_version_returns_string(self):
         result = get_version()

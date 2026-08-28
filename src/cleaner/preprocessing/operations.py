@@ -10,7 +10,7 @@ No operation creates synthetic rows or uses dummy data.
 
 from __future__ import annotations
 
-from typing import Sequence
+from collections.abc import Sequence
 
 import numpy as np
 import pandas as pd
@@ -49,9 +49,7 @@ class ColumnInteraction(FeatureOperation):
         self.column_a = column_a
         self.column_b = column_b
         self.output_column = (
-            output_column
-            if output_column is not None
-            else f"{column_a}_x_{column_b}"
+            output_column if output_column is not None else f"{column_a}_x_{column_b}"
         )
 
         if not self.output_column:
@@ -74,9 +72,7 @@ class ColumnInteraction(FeatureOperation):
         self._validate_numeric_columns(data)
 
         result = data.copy()
-        result[self.output_column] = (
-            result[self.column_a] * result[self.column_b]
-        )
+        result[self.output_column] = result[self.column_a] * result[self.column_b]
 
         return result
 
@@ -95,9 +91,7 @@ class ColumnInteraction(FeatureOperation):
         ]
 
         if missing:
-            raise KeyError(
-                f"Required columns are missing: {missing}."
-            )
+            raise KeyError(f"Required columns are missing: {missing}.")
 
     def _validate_numeric_columns(self, data: pd.DataFrame) -> None:
         non_numeric = [
@@ -139,14 +133,10 @@ class RatioFeature(FeatureOperation):
             raise ValueError("denominator must be a non-empty string.")
 
         if numerator == denominator:
-            raise ValueError(
-                "numerator and denominator must be different."
-            )
+            raise ValueError("numerator and denominator must be different.")
 
         if zero_division not in {"nan", "raise"}:
-            raise ValueError(
-                "zero_division must be either 'nan' or 'raise'."
-            )
+            raise ValueError("zero_division must be either 'nan' or 'raise'.")
 
         self.numerator = numerator
         self.denominator = denominator
@@ -216,9 +206,7 @@ class RatioFeature(FeatureOperation):
         ]
 
         if missing:
-            raise KeyError(
-                f"Required columns are missing: {missing}."
-            )
+            raise KeyError(f"Required columns are missing: {missing}.")
 
     def _validate_numeric_columns(self, data: pd.DataFrame) -> None:
         non_numeric = [
@@ -272,9 +260,7 @@ class PolynomialFeature(FeatureOperation):
         self.column = column
         self.degree = degree
         self.include_bias = include_bias
-        self.output_prefix = (
-            output_prefix if output_prefix is not None else column
-        )
+        self.output_prefix = output_prefix if output_prefix is not None else column
 
         if not self.output_prefix:
             raise ValueError("output_prefix must be a non-empty string.")
@@ -283,14 +269,10 @@ class PolynomialFeature(FeatureOperation):
         self._validate_input(data)
 
         if self.column not in data.columns:
-            raise KeyError(
-                f"Required column {self.column!r} is missing."
-            )
+            raise KeyError(f"Required column {self.column!r} is missing.")
 
         if not pd.api.types.is_numeric_dtype(data[self.column]):
-            raise TypeError(
-                f"Column {self.column!r} must be numeric."
-            )
+            raise TypeError(f"Column {self.column!r} must be numeric.")
 
         self._is_fitted = True
         return self
@@ -300,14 +282,10 @@ class PolynomialFeature(FeatureOperation):
         self._require_fitted()
 
         if self.column not in data.columns:
-            raise KeyError(
-                f"Required column {self.column!r} is missing."
-            )
+            raise KeyError(f"Required column {self.column!r} is missing.")
 
         if not pd.api.types.is_numeric_dtype(data[self.column]):
-            raise TypeError(
-                f"Column {self.column!r} must be numeric."
-            )
+            raise TypeError(f"Column {self.column!r} must be numeric.")
 
         result = data.copy()
         values = result[self.column]
@@ -368,14 +346,10 @@ class LogFeature(FeatureOperation):
         self._validate_input(data)
 
         if self.column not in data.columns:
-            raise KeyError(
-                f"Required column {self.column!r} is missing."
-            )
+            raise KeyError(f"Required column {self.column!r} is missing.")
 
         if not pd.api.types.is_numeric_dtype(data[self.column]):
-            raise TypeError(
-                f"Column {self.column!r} must be numeric."
-            )
+            raise TypeError(f"Column {self.column!r} must be numeric.")
 
         adjusted = data[self.column].astype("float64") + self.offset
 
@@ -394,14 +368,10 @@ class LogFeature(FeatureOperation):
         self._require_fitted()
 
         if self.column not in data.columns:
-            raise KeyError(
-                f"Required column {self.column!r} is missing."
-            )
+            raise KeyError(f"Required column {self.column!r} is missing.")
 
         if not pd.api.types.is_numeric_dtype(data[self.column]):
-            raise TypeError(
-                f"Column {self.column!r} must be numeric."
-            )
+            raise TypeError(f"Column {self.column!r} must be numeric.")
 
         adjusted = data[self.column].astype("float64") + self.offset
 
@@ -495,9 +465,7 @@ class DatetimeFeatures(FeatureOperation):
         self._validate_input(data)
 
         if self.column not in data.columns:
-            raise KeyError(
-                f"Required column {self.column!r} is missing."
-            )
+            raise KeyError(f"Required column {self.column!r} is missing.")
 
         self._validate_datetime_column(data)
 
@@ -509,9 +477,7 @@ class DatetimeFeatures(FeatureOperation):
         self._require_fitted()
 
         if self.column not in data.columns:
-            raise KeyError(
-                f"Required column {self.column!r} is missing."
-            )
+            raise KeyError(f"Required column {self.column!r} is missing.")
 
         self._validate_datetime_column(data)
 

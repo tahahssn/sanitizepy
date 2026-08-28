@@ -7,13 +7,13 @@ Core data models used by the Rule Engine.
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class RuleSeverity(str, Enum):
+class RuleSeverity(StrEnum):
     """
     Severity level of a rule.
     """
@@ -24,7 +24,7 @@ class RuleSeverity(str, Enum):
     CRITICAL = "critical"
 
 
-class RuleCategory(str, Enum):
+class RuleCategory(StrEnum):
     """
     Logical category for a rule.
     """

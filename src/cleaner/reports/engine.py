@@ -85,8 +85,7 @@ class ReportEngine(BaseEngine):
 
         if not all(isinstance(section, ReportSection) for section in sections):
             raise TypeError(
-                "Iterable report results must contain only ReportSection "
-                "instances."
+                "Iterable report results must contain only ReportSection " "instances."
             )
 
         return sections

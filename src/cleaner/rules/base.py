@@ -10,6 +10,7 @@ the ``evaluate`` method.
 
 from __future__ import annotations
 
+import logging
 from abc import ABC, abstractmethod
 from typing import Any
 
@@ -48,7 +49,7 @@ class BaseRule(ABC):
         return self._description
 
     @property
-    def logger(self):
+    def logger(self) -> logging.Logger:
         """Rule logger."""
         return self._logger
 
@@ -64,10 +65,7 @@ class BaseRule(ABC):
         raise NotImplementedError
 
     def __repr__(self) -> str:
-        return (
-            f"{self.__class__.__name__}"
-            f"(name={self.name!r})"
-        )
+        return f"{self.__class__.__name__}" f"(name={self.name!r})"
 
 
 class Rule(BaseRule):

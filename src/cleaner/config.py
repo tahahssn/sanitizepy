@@ -82,8 +82,7 @@ class CleanerConfig:
             self.report_directory = Path(self.report_directory).expanduser().resolve()
 
         self.missing_value_tokens = frozenset(
-            token.casefold()
-            for token in self.missing_value_tokens
+            token.casefold() for token in self.missing_value_tokens
         )
 
 

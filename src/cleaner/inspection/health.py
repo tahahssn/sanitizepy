@@ -12,7 +12,6 @@ Computes composite Dataset Health Score (0-100) based on 5 quality dimensions:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
 
 from rich.console import Console
 from rich.panel import Panel
@@ -84,10 +83,15 @@ class DatasetHealthReport:
             else ("yellow" if self.health_score >= 60 else "red")
         )
         header_text = (
-            f"[bold]Dataset Health Score: [{color}]{self.health_score}/100[/{color}][/bold]\n"
-            f"Rows: {self.rows:,} | Columns: {self.columns:,} | Memory: {self.memory_mb:.2f} MB\n"
-            f"Completeness: {self.completeness_score:.1f}% | Uniqueness: {self.uniqueness_score:.1f}% | "
-            f"Consistency: {self.consistency_score:.1f}% | Validity: {self.validity_score:.1f}% | Integrity: {self.integrity_score:.1f}%"
+            "[bold]Dataset Health Score: "
+            f"[{color}]{self.health_score}/100[/{color}][/bold]\n"
+            f"Rows: {self.rows:,} | Columns: {self.columns:,} | "
+            f"Memory: {self.memory_mb:.2f} MB\n"
+            f"Completeness: {self.completeness_score:.1f}% | "
+            f"Uniqueness: {self.uniqueness_score:.1f}% | "
+            f"Consistency: {self.consistency_score:.1f}% | "
+            f"Validity: {self.validity_score:.1f}% | "
+            f"Integrity: {self.integrity_score:.1f}%"
         )
         console.print(Panel(header_text, title="DATASET HEALTH REPORT", expand=False))
 
@@ -125,5 +129,6 @@ class DatasetHealthReport:
             console.print(table)
         else:
             console.print(
-                "[green]No data quality issues detected! Dataset is in prime condition.[/green]"
+                "[green]No data quality issues detected! Dataset is in prime "
+                "condition.[/green]"
             )

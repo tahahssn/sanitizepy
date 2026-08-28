@@ -25,6 +25,7 @@ def _make_df(**kwargs):
 # ColumnInteraction
 # ---------------------------------------------------------------------------
 
+
 class TestColumnInteraction:
     def setup_method(self):
         self.df = _make_df(a=[1.0, 2.0, 3.0], b=[4.0, 5.0, 6.0])
@@ -41,9 +42,7 @@ class TestColumnInteraction:
         op = ColumnInteraction("a", "b")
         result = op.fit_transform(self.df)
         expected = self.df["a"] * self.df["b"]
-        pd.testing.assert_series_equal(
-            result["a_x_b"], expected, check_names=False
-        )
+        pd.testing.assert_series_equal(result["a_x_b"], expected, check_names=False)
 
     def test_does_not_mutate_input(self):
         op = ColumnInteraction("a", "b")
@@ -94,6 +93,7 @@ class TestColumnInteraction:
 # ---------------------------------------------------------------------------
 # RatioFeature
 # ---------------------------------------------------------------------------
+
 
 class TestRatioFeature:
     def setup_method(self):
@@ -149,6 +149,7 @@ class TestRatioFeature:
 # ---------------------------------------------------------------------------
 # PolynomialFeature
 # ---------------------------------------------------------------------------
+
 
 class TestPolynomialFeature:
     def setup_method(self):
@@ -222,9 +223,10 @@ class TestPolynomialFeature:
 # LogFeature
 # ---------------------------------------------------------------------------
 
+
 class TestLogFeature:
     def setup_method(self):
-        self.df = _make_df(x=[1.0, np.e, np.e ** 2])
+        self.df = _make_df(x=[1.0, np.e, np.e**2])
 
     def test_default_output_column_name(self):
         op = LogFeature("x")
@@ -284,11 +286,12 @@ class TestLogFeature:
 # DatetimeFeatures
 # ---------------------------------------------------------------------------
 
+
 class TestDatetimeFeatures:
     def setup_method(self):
-        self.df = pd.DataFrame({
-            "ts": pd.to_datetime(["2023-03-15 10:30:00", "2024-07-04 22:15:45"])
-        })
+        self.df = pd.DataFrame(
+            {"ts": pd.to_datetime(["2023-03-15 10:30:00", "2024-07-04 22:15:45"])}
+        )
 
     def test_extracts_year(self):
         op = DatetimeFeatures("ts", features=["year"])

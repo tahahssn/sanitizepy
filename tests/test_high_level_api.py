@@ -18,7 +18,18 @@ def sample_raw_dataframe() -> pd.DataFrame:
     return pd.DataFrame(
         {
             "id": [1, 2, 3, 3, 5, 6, 7, 8, 9, 10],
-            "name": ["Alice", "Bob", "Charlie", "Charlie", "Eve", "Frank", "Grace", "Heidi", "Ivan", "Judy"],
+            "name": [
+                "Alice",
+                "Bob",
+                "Charlie",
+                "Charlie",
+                "Eve",
+                "Frank",
+                "Grace",
+                "Heidi",
+                "Ivan",
+                "Judy",
+            ],
             "age": [25.0, 30.0, None, None, 45.0, 50.0, 35.0, 40.0, 28.0, 33.0],
             "signup_date": [
                 "2023-01-01",
@@ -94,7 +105,8 @@ def test_actual_clean_execution(sample_raw_dataframe: pd.DataFrame) -> None:
 
     assert isinstance(result, CleaningResult)
     assert result.dry_run is False
-    # Shape after cleaning should be transformed (e.g. empty_col dropped, duplicates removed)
+    # Shape after cleaning should be transformed (e.g. empty_col dropped,
+    # duplicates removed)
     assert result.data.shape != sample_raw_dataframe.shape
     assert "empty_col" not in result.data.columns
     assert result.data.duplicated().sum() == 0

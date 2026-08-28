@@ -28,16 +28,12 @@ def validate_rule_name(name: str) -> None:
         If the name is invalid.
     """
     if not isinstance(name, str):
-        raise TypeError(
-            "Rule name must be a string."
-        )
+        raise TypeError("Rule name must be a string.")
 
     name = name.strip()
 
     if not name:
-        raise ValueError(
-            "Rule name cannot be empty."
-        )
+        raise ValueError("Rule name cannot be empty.")
 
 
 def validate_description(description: str) -> None:
@@ -50,9 +46,7 @@ def validate_description(description: str) -> None:
         Human-readable description.
     """
     if not isinstance(description, str):
-        raise TypeError(
-            "Rule description must be a string."
-        )
+        raise TypeError("Rule description must be a string.")
 
 
 def validate_priority(priority: int) -> None:
@@ -65,9 +59,7 @@ def validate_priority(priority: int) -> None:
         Rule execution priority.
     """
     if not isinstance(priority, int):
-        raise TypeError(
-            "Rule priority must be an integer."
-        )
+        raise TypeError("Rule priority must be an integer.")
 
 
 def validate_enabled(enabled: bool) -> None:
@@ -75,9 +67,7 @@ def validate_enabled(enabled: bool) -> None:
     Validate enabled flag.
     """
     if not isinstance(enabled, bool):
-        raise TypeError(
-            "Rule enabled flag must be a boolean."
-        )
+        raise TypeError("Rule enabled flag must be a boolean.")
 
 
 def validate_callback(
@@ -92,9 +82,7 @@ def validate_callback(
         Callable executed by the rule.
     """
     if not callable(callback):
-        raise TypeError(
-            "Rule callback must be callable."
-        )
+        raise TypeError("Rule callback must be callable.")
 
 
 __all__ = [

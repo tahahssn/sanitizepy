@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
 from time import perf_counter
+from typing import Any
 
 import pandas as pd
 
@@ -39,19 +40,22 @@ class PipelineEngine:
     remain implemented by their respective Cleaner engines or transformers.
     """
 
-    def __init__(self, steps: Iterable[PipelineStep] | None = None) -> None:
-        self._steps: list[PipelineStep] = []
+    def __init__(
+        self,
+        steps: Iterable[PipelineStep[pd.DataFrame, Any]] | None = None,
+    ) -> None:
+        self._steps: list[PipelineStep[pd.DataFrame, Any]] = []
 
         if steps is not None:
             for step in steps:
                 self.add_step(step)
 
     @property
-    def steps(self) -> tuple[PipelineStep, ...]:
+    def steps(self) -> tuple[PipelineStep[pd.DataFrame, Any], ...]:
         """Return the configured pipeline steps."""
         return tuple(self._steps)
 
-    def add_step(self, step: PipelineStep) -> PipelineEngine:
+    def add_step(self, step: PipelineStep[pd.DataFrame, Any]) -> PipelineEngine:
         """Append a pipeline step.
 
         Parameters
@@ -65,9 +69,7 @@ class PipelineEngine:
             The current engine instance, allowing fluent configuration.
         """
         if not isinstance(step, PipelineStep):
-            raise TypeError(
-                "step must be an instance of PipelineStep."
-            )
+            raise TypeError("step must be an instance of PipelineStep.")
 
         self._steps.append(step)
         return self
@@ -90,9 +92,7 @@ class PipelineEngine:
                 del self._steps[index]
                 return self
 
-        raise ValueError(
-            f"No pipeline step named {normalized_name!r} exists."
-        )
+        raise ValueError(f"No pipeline step named {normalized_name!r} exists.")
 
     def clear(self) -> None:
         """Remove all configured pipeline steps."""
@@ -133,9 +133,7 @@ class PipelineEngine:
             try:
                 transformed = step.execute(current)
             except Exception as exc:
-                raise RuntimeError(
-                    f"Pipeline step '{step.name}' failed."
-                ) from exc
+                raise RuntimeError(f"Pipeline step '{step.name}' failed.") from exc
 
             if not isinstance(transformed, pd.DataFrame):
                 raise TypeError(
@@ -168,6 +166,6 @@ class PipelineEngine:
         """Return the number of configured steps."""
         return len(self._steps)
 
-    def __iter__(self) -> Iterator[PipelineStep]:
+    def __iter__(self) -> Iterator[PipelineStep[pd.DataFrame, Any]]:
         """Iterate over configured steps."""
         return iter(self._steps)

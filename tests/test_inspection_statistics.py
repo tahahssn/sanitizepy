@@ -9,10 +9,8 @@ import pandas as pd
 import pytest
 
 from cleaner.inspection.statistics import (
-    NumericColumnStatistics,
     StatisticsInspectionResult,
     StatisticsInspector,
-    StatisticsSummary,
 )
 
 
@@ -145,10 +143,12 @@ class TestStatisticsInspectorInfiniteValues:
 
 class TestStatisticsInspectorMixedColumns:
     def setup_method(self):
-        self.df = pd.DataFrame({
-            "num": [1.0, 2.0, 3.0],
-            "text": ["a", "b", "c"],
-        })
+        self.df = pd.DataFrame(
+            {
+                "num": [1.0, 2.0, 3.0],
+                "text": ["a", "b", "c"],
+            }
+        )
         self.inspector = StatisticsInspector()
         self.result = self.inspector.inspect(self.df)
 

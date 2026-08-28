@@ -27,9 +27,7 @@ class RuleRegistry:
         Register a rule.
         """
         if rule.name in self._rules:
-            raise ValueError(
-                f"Rule '{rule.name}' is already registered."
-            )
+            raise ValueError(f"Rule '{rule.name}' is already registered.")
 
         self._rules[rule.name] = rule
 
@@ -76,10 +74,7 @@ class RuleRegistry:
         return tuple(self._rules.items())
 
     def __contains__(self, name: object) -> bool:
-        return (
-            isinstance(name, str)
-            and name in self._rules
-        )
+        return isinstance(name, str) and name in self._rules
 
     def __len__(self) -> int:
         return len(self._rules)
@@ -88,10 +83,7 @@ class RuleRegistry:
         return iter(self._rules.values())
 
     def __repr__(self) -> str:
-        return (
-            f"{self.__class__.__name__}"
-            f"(rules={len(self)})"
-        )
+        return f"{self.__class__.__name__}" f"(rules={len(self)})"
 
 
 __all__ = [

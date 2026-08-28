@@ -29,6 +29,7 @@ class CleanerError(Exception):
 # Configuration
 # ==========================================================
 
+
 class ConfigurationError(CleanerError):
     """
     Raised when configuration is invalid, incomplete,
@@ -41,6 +42,7 @@ class ConfigurationError(CleanerError):
 # ==========================================================
 # Validation
 # ==========================================================
+
 
 class ValidationError(CleanerError):
     """
@@ -70,6 +72,7 @@ class SchemaValidationError(ValidationError):
 # Engine
 # ==========================================================
 
+
 class EngineError(CleanerError):
     """
     Base exception for engine failures.
@@ -97,6 +100,7 @@ class EngineExecutionError(EngineError):
 # ==========================================================
 # Inspection
 # ==========================================================
+
 
 class InspectionError(CleanerError):
     """
@@ -150,6 +154,7 @@ class StatisticsInspectionError(InspectionError):
 # Cleaning
 # ==========================================================
 
+
 class CleaningError(CleanerError):
     """
     Base exception for cleaning failures.
@@ -194,6 +199,7 @@ class DataTypeConversionError(CleaningError):
 # Preprocessing
 # ==========================================================
 
+
 class PreprocessingError(CleanerError):
     """
     Base exception for preprocessing failures.
@@ -230,6 +236,7 @@ class FeatureEngineeringError(PreprocessingError):
 # Rules
 # ==========================================================
 
+
 class RuleError(CleanerError):
     """
     Base exception for rule engine failures.
@@ -257,6 +264,7 @@ class RuleExecutionError(RuleError):
 # ==========================================================
 # Reports
 # ==========================================================
+
 
 class ReportError(CleanerError):
     """
@@ -286,6 +294,7 @@ class ReportExportError(ReportError):
 # Models
 # ==========================================================
 
+
 class ModelError(CleanerError):
     """
     Base exception for internal model failures.
@@ -313,6 +322,7 @@ class DeserializationError(ModelError):
 # ==========================================================
 # Utilities
 # ==========================================================
+
 
 class UtilityError(CleanerError):
     """

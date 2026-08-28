@@ -25,6 +25,7 @@ VERSION_INFO: Final[tuple[int, int, int]] = (
 # HELPERS
 # ============================================================================
 
+
 def get_version() -> str:
     """
     Return the installed package version.

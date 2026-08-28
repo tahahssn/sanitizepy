@@ -9,7 +9,6 @@ recommendations, execution metadata, and overall dataset health.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import List
 
 from pydantic import Field
 
@@ -64,9 +63,9 @@ class CleanerReport(BaseCleanerModel):
 
     summary: ReportSummary
 
-    inspections: List[InspectionResult] = Field(default_factory=list)
+    inspections: list[InspectionResult] = Field(default_factory=list)
 
-    recommendations: List[Recommendation] = Field(default_factory=list)
+    recommendations: list[Recommendation] = Field(default_factory=list)
 
     metadata: ExecutionMetadata
 
@@ -89,27 +88,18 @@ class CleanerReport(BaseCleanerModel):
         """
         Count CRITICAL recommendations.
         """
-        return sum(
-            r.severity.value == "critical"
-            for r in self.recommendations
-        )
+        return sum(r.priority.value == "critical" for r in self.recommendations)
 
     @property
     def warning_recommendations(self) -> int:
         """
         Count WARNING recommendations.
         """
-        return sum(
-            r.severity.value == "warning"
-            for r in self.recommendations
-        )
+        return sum(r.priority.value == "warning" for r in self.recommendations)
 
     @property
     def info_recommendations(self) -> int:
         """
         Count INFO recommendations.
         """
-        return sum(
-            r.severity.value == "info"
-            for r in self.recommendations
-        )
+        return sum(r.priority.value == "info" for r in self.recommendations)

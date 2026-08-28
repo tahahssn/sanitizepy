@@ -4,7 +4,6 @@ Tests for cleaner.cleaning.operations
 
 from __future__ import annotations
 
-import numpy as np
 import pandas as pd
 import pytest
 
@@ -24,6 +23,7 @@ def _make_df(**kwargs):
 # ---------------------------------------------------------------------------
 # DropMissingRows
 # ---------------------------------------------------------------------------
+
 
 class TestDropMissingRows:
     def test_drops_rows_with_any_missing(self):
@@ -68,6 +68,7 @@ class TestDropMissingRows:
 # DropMissingColumns
 # ---------------------------------------------------------------------------
 
+
 class TestDropMissingColumns:
     def test_drops_columns_with_missing_values(self):
         df = _make_df(a=[1, None, 3], b=[1, 2, 3])
@@ -99,6 +100,7 @@ class TestDropMissingColumns:
 # ---------------------------------------------------------------------------
 # FillMissing
 # ---------------------------------------------------------------------------
+
 
 class TestFillMissing:
     def test_fills_all_missing_with_scalar(self):
@@ -138,6 +140,7 @@ class TestFillMissing:
 # ---------------------------------------------------------------------------
 # DropDuplicates
 # ---------------------------------------------------------------------------
+
 
 class TestDropDuplicates:
     def test_drops_duplicate_rows(self):
@@ -190,6 +193,7 @@ class TestDropDuplicates:
 # ---------------------------------------------------------------------------
 # DropColumns
 # ---------------------------------------------------------------------------
+
 
 class TestDropColumns:
     def test_drops_specified_columns(self):

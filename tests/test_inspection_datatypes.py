@@ -11,7 +11,6 @@ from cleaner.inspection.datatypes import (
     ColumnTypeReport,
     DatatypeInspectionResult,
     DatatypeInspector,
-    DatatypeSummary,
 )
 
 
@@ -158,11 +157,13 @@ class TestDatatypeInspectorBooleanColumn:
 
 class TestDatatypeInspectorMixedColumns:
     def setup_method(self):
-        self.df = pd.DataFrame({
-            "int_col": [1, 2, 3],
-            "float_col": [1.1, 2.2, 3.3],
-            "str_col": ["a", "b", "c"],
-        })
+        self.df = pd.DataFrame(
+            {
+                "int_col": [1, 2, 3],
+                "float_col": [1.1, 2.2, 3.3],
+                "str_col": ["a", "b", "c"],
+            }
+        )
         self.inspector = DatatypeInspector()
         self.result = self.inspector.inspect(self.df)
 

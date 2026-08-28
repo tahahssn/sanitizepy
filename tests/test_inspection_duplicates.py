@@ -10,7 +10,6 @@ import pytest
 from cleaner.inspection.duplicates import (
     DuplicateInspectionResult,
     DuplicateInspector,
-    DuplicateSummary,
 )
 
 

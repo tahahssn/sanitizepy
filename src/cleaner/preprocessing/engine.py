@@ -167,10 +167,7 @@ class FeatureEngineeringEngine:
             Registered operation configurations.
         """
         return {
-            "operations": [
-                operation.get_params()
-                for operation in self._operations
-            ]
+            "operations": [operation.get_params() for operation in self._operations]
         }
 
     def __len__(self) -> int:
@@ -179,21 +176,15 @@ class FeatureEngineeringEngine:
 
     def __repr__(self) -> str:
         operation_names = ", ".join(
-            type(operation).__name__
-            for operation in self._operations
+            type(operation).__name__ for operation in self._operations
         )
 
-        return (
-            f"{type(self).__name__}("
-            f"operations=[{operation_names}]"
-            f")"
-        )
+        return f"{type(self).__name__}(" f"operations=[{operation_names}]" f")"
 
     @staticmethod
     def _validate_input(data: pd.DataFrame) -> None:
         """Validate the dataframe supplied to the engine."""
         if not isinstance(data, pd.DataFrame):
             raise TypeError(
-                "data must be a pandas.DataFrame, "
-                f"got {type(data).__name__}"
+                "data must be a pandas.DataFrame, " f"got {type(data).__name__}"
             )

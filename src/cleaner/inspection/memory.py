@@ -109,33 +109,29 @@ class MemoryInspector:
                 MemoryColumnReport(
                     column=column,
                     dtype=str(series.dtype),
-
                     memory_bytes=before,
                     memory_mb=round(before / (1024**2), 4),
-
                     memory_percentage=round(
                         before / total_memory * 100,
                         4,
                     ),
-
                     recommended_dtype=self._recommend_dtype(series),
-
                     estimated_bytes_after=after,
-
                     estimated_saved_bytes=saved,
-
-                    estimated_saved_percentage=round(
-                        saved / before * 100,
-                        4,
-                    )
-                    if before
-                    else 0.0,
+                    estimated_saved_percentage=(
+                        round(
+                            saved / before * 100,
+                            4,
+                        )
+                        if before
+                        else 0.0
+                    ),
                 )
             )
 
             estimated_total += after
 
-        reports = tuple(
+        sorted_reports = tuple(
             sorted(
                 reports,
                 key=lambda x: x.memory_bytes,
@@ -148,39 +144,35 @@ class MemoryInspector:
         summary = MemorySummary(
             total_columns=len(dataframe.columns),
             total_rows=len(dataframe),
-
             total_memory_bytes=total_memory,
             total_memory_mb=round(
                 total_memory / (1024**2),
                 4,
             ),
-
             estimated_memory_bytes=estimated_total,
             estimated_memory_mb=round(
                 estimated_total / (1024**2),
                 4,
             ),
-
             estimated_saved_bytes=saved,
             estimated_saved_mb=round(
                 saved / (1024**2),
                 4,
             ),
-
-            estimated_saved_percentage=round(
-                saved / total_memory * 100,
-                4,
-            )
-            if total_memory
-            else 0.0,
+            estimated_saved_percentage=(
+                round(
+                    saved / total_memory * 100,
+                    4,
+                )
+                if total_memory
+                else 0.0
+            ),
         )
 
         return MemoryInspectionResult(
             summary=summary,
-            reports=reports,
-            memory_usage=usage.sort_values(
-                ascending=False
-            ),
+            reports=sorted_reports,
+            memory_usage=usage.sort_values(ascending=False),
         )
 
     def largest_columns(
@@ -218,9 +210,7 @@ class MemoryInspector:
                 downcast="integer",
             )
 
-            return int(
-                optimized.memory_usage(deep=True)
-            )
+            return int(optimized.memory_usage(deep=True))
 
         if is_float_dtype(series):
 
@@ -229,24 +219,17 @@ class MemoryInspector:
                 downcast="float",
             )
 
-            return int(
-                optimized.memory_usage(deep=True)
-            )
+            return int(optimized.memory_usage(deep=True))
 
         if is_object_dtype(series):
 
-            ratio = (
-                series.nunique(dropna=True)
-                / max(len(series), 1)
-            )
+            ratio = series.nunique(dropna=True) / max(len(series), 1)
 
             if ratio < self.CATEGORY_THRESHOLD:
 
                 optimized = series.astype("category")
 
-                return int(
-                    optimized.memory_usage(deep=True)
-                )
+                return int(optimized.memory_usage(deep=True))
 
         return current
 
@@ -278,10 +261,7 @@ class MemoryInspector:
 
         if is_object_dtype(series):
 
-            ratio = (
-                series.nunique(dropna=True)
-                / max(len(series), 1)
-            )
+            ratio = series.nunique(dropna=True) / max(len(series), 1)
 
             if ratio < self.CATEGORY_THRESHOLD:
                 return "category"

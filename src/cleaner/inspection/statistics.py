@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Final, Literal
+from typing import Any, Final, Literal, cast
 
 import numpy as np
 import pandas as pd
@@ -142,58 +142,41 @@ class StatisticsInspector:
             reports.append(
                 NumericColumnStatistics(
                     column=column,
-
                     count=int(values.count()),
                     missing=int(series.isna().sum()),
                     unique=int(values.nunique()),
-
-                    minimum=float(values.min()),
-                    maximum=float(values.max()),
-
-                    mean=float(values.mean()),
-                    median=float(values.median()),
-
-                    mode=float(mode.iloc[0])
-                    if not mode.empty
-                    else None,
-
+                    minimum=float(cast(Any, values.min())),
+                    maximum=float(cast(Any, values.max())),
+                    mean=float(cast(Any, values.mean())),
+                    median=float(cast(Any, values.median())),
+                    mode=float(mode.iloc[0]) if not mode.empty else None,
                     # ddof=1: NaN when only one non-NaN value exists; coerce to 0.0.
-                    variance=float(values.var()) if len(values) > 1 else 0.0,
-
-                    standard_deviation=float(values.std()) if len(values) > 1 else 0.0,
-
+                    variance=(
+                        float(cast(Any, values.var())) if len(values) > 1 else 0.0
+                    ),
+                    standard_deviation=(
+                        float(cast(Any, values.std())) if len(values) > 1 else 0.0
+                    ),
                     q1=q1,
                     q2=q2,
                     q3=q3,
-
                     iqr=float(iqr),
-
-                    skewness=float(values.skew()),
-
-                    kurtosis=float(values.kurt()),
-
+                    skewness=float(cast(Any, values.skew())),
+                    kurtosis=float(cast(Any, values.kurt())),
                     sum=float(values.sum()),
-
                     zero_count=int((values == 0).sum()),
-
                     negative_count=int((values < 0).sum()),
-
                     infinite_count=int(
-                        (~np.isfinite(series)).sum()
-                        - int(series.isna().sum())
+                        (~np.isfinite(series)).sum() - int(series.isna().sum())
                     ),
-
                     outlier_count=outliers,
-
                     constant=constant,
                 )
             )
 
         summary = StatisticsSummary(
             numeric_columns=len(reports),
-
             constant_columns=tuple(constant_columns),
-
             analyzed_columns=tuple(analyzed_columns),
         )
 

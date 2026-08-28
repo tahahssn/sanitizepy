@@ -111,12 +111,7 @@ class MissingValueInspector:
 
         missing_counts = mask.sum(axis=0).astype("int64")
 
-        missing_percentages = (
-            missing_counts
-            .div(total_rows)
-            .mul(100.0)
-            .round(4)
-        )
+        missing_percentages = missing_counts.div(total_rows).mul(100.0).round(4)
 
         if threshold is not None:
             keep = missing_percentages >= threshold
@@ -151,9 +146,7 @@ class MissingValueInspector:
         total_missing = int(mask.to_numpy().sum())
 
         missing_percentage = (
-            round((total_missing / total_cells) * 100.0, 4)
-            if total_cells
-            else 0.0
+            round((total_missing / total_cells) * 100.0, 4) if total_cells else 0.0
         )
 
         complete_cells = total_cells - total_missing
@@ -163,13 +156,9 @@ class MissingValueInspector:
             4,
         )
 
-        columns_with_missing = tuple(
-            dataframe.columns[mask.any(axis=0)]
-        )
+        columns_with_missing = tuple(dataframe.columns[mask.any(axis=0)])
 
-        complete_columns = tuple(
-            dataframe.columns[~mask.any(axis=0)]
-        )
+        complete_columns = tuple(dataframe.columns[~mask.any(axis=0)])
 
         rows_with_missing = int(mask.any(axis=1).sum())
 
@@ -196,12 +185,8 @@ class MissingValueInspector:
             summary=summary,
             column_reports=reports,
             missing_mask=mask,
-            missing_counts=missing_counts.sort_values(
-                ascending=False
-            ),
-            missing_percentages=missing_percentages.sort_values(
-                ascending=False
-            ),
+            missing_counts=missing_counts.sort_values(ascending=False),
+            missing_percentages=missing_percentages.sort_values(ascending=False),
         )
 
     def _severity(self, percentage: float) -> str:

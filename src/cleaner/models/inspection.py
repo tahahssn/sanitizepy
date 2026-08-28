@@ -10,7 +10,7 @@ of raw dictionaries.
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import Field
 
@@ -22,7 +22,7 @@ from cleaner.models.base import (
 )
 
 
-class Severity(str, Enum):
+class Severity(StrEnum):
     """
     Severity level for detected issues.
     """
@@ -34,7 +34,7 @@ class Severity(str, Enum):
     CRITICAL = "critical"
 
 
-class InspectionStatus(str, Enum):
+class InspectionStatus(StrEnum):
     """
     Inspection execution status.
     """

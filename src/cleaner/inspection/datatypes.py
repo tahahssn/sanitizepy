@@ -203,10 +203,7 @@ class DatatypeInspector:
 
         if is_object_dtype(series):
 
-            ratio = (
-                series.nunique(dropna=True)
-                / max(len(series), 1)
-            )
+            ratio = series.nunique(dropna=True) / max(len(series), 1)
 
             if ratio < self.CATEGORY_THRESHOLD:
                 return "category"

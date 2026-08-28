@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+import time
 from collections.abc import Iterable
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-import time
+from datetime import UTC, datetime
 from typing import Any
 
 import pandas as pd
@@ -41,7 +41,10 @@ class CleaningResult:
         Return a human-readable text summary of all executed operations.
         """
         mode = " [DRY RUN]" if self.dry_run else ""
-        lines = [f"Cleaning Result{mode} - {len(self.operations)} operation(s) in {self.duration_seconds:.4f}s:"]
+        lines = [
+            f"Cleaning Result{mode} - {len(self.operations)} operation(s) "
+            f"in {self.duration_seconds:.4f}s:"
+        ]
         for idx, op in enumerate(self.operations, start=1):
             lines.append(
                 f"  {idx}. {op.operation_name}: affected {op.rows_affected} row(s), "
@@ -80,9 +83,7 @@ class CleaningEngine:
         Operations execute in the exact order in which they are added.
         """
         if not isinstance(operation, CleaningOperation):
-            raise TypeError(
-                "operation must be an instance of CleaningOperation"
-            )
+            raise TypeError("operation must be an instance of CleaningOperation")
 
         self._operations.append(operation)
 
@@ -131,7 +132,7 @@ class CleaningEngine:
             operation_results.append(op_res)
             audit_log.append(
                 {
-                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "timestamp": datetime.now(UTC).isoformat(),
                     "operation": op_res.operation_name,
                     "affected_columns": op_res.affected_columns,
                     "rows_affected": op_res.rows_affected,
@@ -159,4 +160,4 @@ class CleaningEngine:
         """
         Return descriptions of the configured operations in execution order.
         """
-        return [operation.describe() for operation in self._operations]
+        return [operation.describe() for operation in self._operations]

@@ -12,7 +12,6 @@ from typing import Any
 import pandas as pd
 
 from ..engine.base import BaseEngine
-from .base import BaseRule
 from .registry import RuleRegistry
 from .rule import RuleResult
 

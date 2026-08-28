@@ -10,8 +10,8 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from pathlib import Path
 
-from .report import Report
 from .renderers import BaseRenderer
+from .report import Report
 
 
 class BaseExporter(ABC):
