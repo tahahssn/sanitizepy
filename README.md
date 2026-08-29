@@ -1,11 +1,11 @@
 <div align="center">
 
-<!-- Banner placeholder — drop your image here -->
-<img src="assets/banner.svg" alt="sanitizepy banner" width="100%" />
+<!-- Banner placeholder: drop your image here -->
+<img src="assets/banner.svg" alt="sanitizepy banner" width="70%" />
 
 # sanitizepy
 
-### *Automated data quality inspection, explainable cleaning, and preprocessing — in pure Python.*
+### *Automated data quality inspection, explainable cleaning, and preprocessing in pure Python.*
 
 <br/>
 
@@ -13,11 +13,8 @@
 [![Python 3.11+](https://img.shields.io/badge/python-≥3.11-3b82f6?style=flat-square)](https://www.python.org)
 [![GitHub Stars](https://img.shields.io/github/stars/tahahssn/sanitizepy?style=flat-square&color=f59e0b&label=⭐%20stars)](https://github.com/tahahssn/sanitizepy/stargazers)
 [![MIT License](https://img.shields.io/badge/license-MIT-10b981?style=flat-square)](./LICENSE)
-<!-- [![Health Score](https://img.shields.io/badge/output-health%20score%200–100-ec4899?style=flat-square)](https://github.com/tahahssn/sanitizepy) -->
 
 </div>
-
----
 
 ## Overview
 
@@ -25,16 +22,14 @@
 
 `sanitizepy` separates responsibilities into dedicated subsystems:
 
-- **Core Engine & High-Level API** — Centralized `Cleaner` entry point supporting `.inspect()`, `.plan()`, and `.clean(..., dry_run=True)`.
-- **Dataset Health & Inspection** — Read-only dataset analysis covering completeness, uniqueness, consistency, validity, datatypes, memory consumption, and statistical distributions with a composite **Dataset Health Score (0–100)**.
-- **Explainable Recommendations & Planning** — Rule-based issue detection with human-readable explanations (`WHAT`, `WHY`, `SEVERITY`, `EVIDENCE`, `RECOMMENDATION`) and previewable `CleaningPlan` instances.
-- **Cleaning Engine** — Safe, deterministic dataset transformations with dry-run support, before/after impact metrics, and detailed audit trails.
-- **Preprocessing & Feature Engineering** — Stateful fit/transform operations for interactions, ratio features, polynomial terms, logarithmic transformations, and datetime extraction.
-- **Rule Engine** — Quality validation framework with built-in rules, severity levels, and category classifications.
-- **Report Engine** — Structured report generation, rendering (Text, JSON), and exporting (String, File).
-- **Pipeline Engine** — Execution workflow orchestration with step timing and metadata tracking.
-
----
+- **Core Engine & High-Level API:** Centralized `Cleaner` entry point supporting `.inspect()`, `.plan()`, and `.clean(..., dry_run=True)`.
+- **Dataset Health & Inspection:** Read-only dataset analysis covering completeness, uniqueness, consistency, validity, datatypes, memory consumption, and statistical distributions with a composite **Dataset Health Score (0–100)**.
+- **Explainable Recommendations & Planning:** Rule-based issue detection with human-readable explanations (`WHAT`, `WHY`, `SEVERITY`, `EVIDENCE`, `RECOMMENDATION`) and previewable `CleaningPlan` instances.
+- **Cleaning Engine:** Safe, deterministic dataset transformations with dry-run support, before/after impact metrics, and detailed audit trails.
+- **Preprocessing & Feature Engineering:** Stateful fit/transform operations for interactions, ratio features, polynomial terms, logarithmic transformations, and datetime extraction.
+- **Rule Engine:** Quality validation framework with built-in rules, severity levels, and category classifications.
+- **Report Engine:** Structured report generation, rendering (Text, JSON), and exporting (String, File).
+- **Pipeline Engine:** Execution workflow orchestration with step timing and metadata tracking.
 
 ## Capabilities
 
@@ -49,8 +44,6 @@
 | **Reporting** | `ReportEngine`, `TextRenderer`, `JSONRenderer`, `StringExporter`, `FileExporter` | Structured immutable reports with multi-format rendering and exporting |
 | **Pipeline** | `PipelineEngine`, `CallableStep`, `TransformStep` | Sequenced workflow execution with step duration and row/column metrics |
 
----
-
 ## Requirements
 
 - **Python**: `>=3.11`
@@ -60,8 +53,6 @@
   - `scipy >= 1.10.0`
   - `rich >= 13.0.0`
   - `pydantic >= 2.0.0`
-
----
 
 ## Installation
 
@@ -83,9 +74,7 @@ cd sanitizepy
 pip install -e .[dev]
 ```
 
----
-
-## Quick Start — High-Level API
+## Quick Start: High-Level API
 
 The recommended entry point is the `Cleaner` class or the module-level convenience functions `inspect()`, `plan()`, and `clean()`.
 
@@ -95,7 +84,7 @@ from sanitizepy import Cleaner
 
 df = pd.read_csv("your_data.csv")
 
-# 1. Inspect — Understand what's wrong
+# 1. Inspect: understand what's wrong
 c = Cleaner()
 report = c.inspect(df)
 report.show()                     # Rich terminal health report
@@ -104,14 +93,14 @@ print(f"Health Score: {report.health_score}/100")
 print(f"Critical Issues: {len(report.critical_issues)}")
 print(f"Recommendations: {len(report.recommendations)}")
 
-# 2. Plan — Generate a previewable cleaning plan
+# 2. Plan: generate a previewable cleaning plan
 plan = c.plan(report)
 plan.show()                       # Tabular plan preview
 
 plan.disable(2)                   # Disable step #2
 plan.enable(2)                    # Re-enable step #2
 
-# 3. Clean — Dry run or apply for real
+# 3. Clean: dry run or apply for real
 dry_result = c.clean(df, plan=plan, dry_run=True)
 print(dry_result.summary())
 
@@ -132,9 +121,7 @@ cleaning_plan = plan(report)
 result = clean(df, cleaning_plan=cleaning_plan, dry_run=True)
 ```
 
----
-
-## Advanced Usage — Direct Engine Access
+## Advanced Usage: Direct Engine Access
 
 For granular control, use the individual engines directly:
 
@@ -156,8 +143,6 @@ result = engine.run_with_result(df, dry_run=False)
 print(result.summary())
 print(result.audit_log)
 ```
-
----
 
 ## Architecture & Design
 
@@ -192,17 +177,13 @@ print(result.audit_log)
 └───────────────────────────┘
 ```
 
----
-
 ## Documentation
 
 Detailed documentation is available in the [`docs/`](./docs) directory:
 
-- [**Installation Guide**](./docs/installation.md) — Requirements, virtual environments, installation commands, verification, and upgrade procedures.
-- [**Quick Start Guide**](./docs/quickstart.md) — Step-by-step examples for inspection, cleaning, feature engineering, rules, reporting, and pipelines.
-- [**API Reference**](./docs/api.md) — Complete technical API documentation for classes, functions, dataclasses, models, and exceptions.
-
----
+- [**Installation Guide**](./docs/installation.md): Requirements, virtual environments, installation commands, verification, and upgrade procedures.
+- [**Quick Start Guide**](./docs/quickstart.md): Step-by-step examples for inspection, cleaning, feature engineering, rules, reporting, and pipelines.
+- [**API Reference**](./docs/api.md): Complete technical API documentation for classes, functions, dataclasses, models, and exceptions.
 
 ## Development & Testing
 
@@ -219,8 +200,6 @@ black --check src tests
 ruff check src tests
 mypy src
 ```
-
----
 
 ## ❤️ Support the Project
 
@@ -243,8 +222,6 @@ Every contribution helps keep this library open-source, actively maintained, and
 <br/>
 
 </div>
-
----
 
 ## License
 
