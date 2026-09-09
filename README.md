@@ -1,120 +1,149 @@
-﻿<a id="readme-top"></a>
+﻿<!--
+*** Thanks for checking out sanitizepy. If you have a suggestion that would
+*** make this better, please fork the repo and create a pull request or
+*** simply open an issue with the tag "enhancement".
+*** Don't forget to give the project a star!
+-->
 
+<!-- PROJECT LOGO -->
+<br />
 <div align="center">
+  <a href="https://github.com/tahahssn/sanitizepy">
+    <img src="https://raw.githubusercontent.com/tahahssn/sanitizepy/main/assets/banner.svg" alt="Logo" width="70%">
+  </a>
 
-<img src="assets/banner.svg" alt="sanitizepy banner" width="70%" />
+  <h3 align="center">sanitizepy</h3>
 
-# sanitizepy
+  <!-- PROJECT SHIELDS -->
+  <p align="center">
+    <a href="https://github.com/tahahssn/sanitizepy/graphs/contributors"><img src="https://img.shields.io/github/contributors/tahahssn/sanitizepy.svg?style=for-the-badge" alt="Contributors"></a>
+    <a href="https://github.com/tahahssn/sanitizepy/network/members"><img src="https://img.shields.io/github/forks/tahahssn/sanitizepy.svg?style=for-the-badge" alt="Forks"></a>
+    <a href="https://github.com/tahahssn/sanitizepy/stargazers"><img src="https://img.shields.io/github/stars/tahahssn/sanitizepy.svg?style=for-the-badge" alt="Stargazers"></a>
+    <a href="https://github.com/tahahssn/sanitizepy/issues"><img src="https://img.shields.io/github/issues/tahahssn/sanitizepy.svg?style=for-the-badge" alt="Issues"></a>
+    <a href="https://github.com/tahahssn/sanitizepy/blob/main/LICENSE"><img src="https://img.shields.io/github/license/tahahssn/sanitizepy.svg?style=for-the-badge" alt="MIT License"></a>
+    <a href="https://pypi.org/project/sanitizepy"><img src="https://img.shields.io/pypi/v/sanitizepy.svg?style=for-the-badge&label=pypi" alt="PyPI"></a>
+  </p>
 
-### *Find what is wrong with your data, understand why, and fix it, without guessing.*
-
-Automated tabular **data quality inspection**, **explainable cleaning**, and **preprocessing** in pure Python.
-
-<br/>
-
-[![PyPI Version](https://img.shields.io/pypi/v/sanitizepy?style=for-the-badge&color=4f46e5&label=pypi)](https://pypi.org/project/sanitizepy)
-[![Python](https://img.shields.io/badge/python-3.11%20|%203.12%20|%203.13-3b82f6?style=for-the-badge)](https://www.python.org)
-[![License](https://img.shields.io/badge/license-MIT-10b981?style=for-the-badge)](./LICENSE)
-[![Stars](https://img.shields.io/github/stars/tahahssn/sanitizepy?style=for-the-badge&color=f59e0b)](https://github.com/tahahssn/sanitizepy/stargazers)
-
-<a href="#quick-start"><strong>Quick Start</strong></a>
-&middot;
-<a href="./docs">Documentation</a>
-&middot;
-<a href="https://github.com/tahahssn/sanitizepy/issues/new?labels=bug">Report Bug</a>
-&middot;
-<a href="https://github.com/tahahssn/sanitizepy/issues/new?labels=enhancement">Request Feature</a>
-
+  <p align="center">
+    Automated data quality inspection, explainable cleaning, and preprocessing for pandas.
+    <br />
+    <a href="./docs"><strong>Explore the docs »</strong></a>
+    <br />
+    <br />
+    <a href="https://pypi.org/project/sanitizepy">View on PyPI</a>
+    &middot;
+    <a href="https://github.com/tahahssn/sanitizepy/issues/new?labels=bug">Report Bug</a>
+    &middot;
+    <a href="https://github.com/tahahssn/sanitizepy/issues/new?labels=enhancement">Request Feature</a>
+  </p>
 </div>
 
 <!-- TABLE OF CONTENTS -->
 <details>
   <summary>Table of Contents</summary>
   <ol>
-    <li><a href="#why-sanitizepy">Why sanitizepy</a></li>
-    <li><a href="#features">Features</a></li>
-    <li><a href="#installation">Installation</a></li>
-    <li><a href="#quick-start">Quick Start</a></li>
     <li>
-      <a href="#usage">Usage</a>
+      <a href="#about-the-project">About The Project</a>
       <ul>
-        <li><a href="#inspect-understand-whats-wrong">Inspect</a></li>
-        <li><a href="#plan-preview-before-you-touch-anything">Plan</a></li>
-        <li><a href="#clean-dry-run-then-apply">Clean</a></li>
-        <li><a href="#profile-and-validate">Profile &amp; Validate</a></li>
+        <li><a href="#built-with">Built With</a></li>
       </ul>
     </li>
-    <li><a href="#how-it-works">How It Works</a></li>
-    <li><a href="#documentation">Documentation</a></li>
+    <li>
+      <a href="#getting-started">Getting Started</a>
+      <ul>
+        <li><a href="#prerequisites">Prerequisites</a></li>
+        <li><a href="#installation">Installation</a></li>
+      </ul>
+    </li>
+    <li><a href="#usage">Usage</a></li>
+    <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#support">Support</a></li>
     <li><a href="#license">License</a></li>
+    <li><a href="#contact">Contact</a></li>
+    <li><a href="#acknowledgments">Acknowledgments</a></li>
   </ol>
 </details>
 
-## Why sanitizepy
+<!-- ABOUT THE PROJECT -->
+## About The Project
 
 Most data-cleaning code is a pile of one-off `pandas` snippets: drop these rows, fill those nulls, strip that whitespace. It works once, then rots. Six months later nobody remembers *why* a column was dropped, and there is no record of what changed.
 
 `sanitizepy` treats cleaning as a transparent, reviewable process instead of a black box:
 
-- **You see what is wrong first.** Every dataset gets a health score and a list of concrete issues before anything is modified.
-- **You get told why.** Each issue carries a plain-language explanation, a severity, and the evidence behind it.
-- **Nothing changes without your say-so.** Cleaning runs as a previewable plan with a dry-run mode, so you inspect the impact before applying it.
-- **Everything is recorded.** Each run produces a JSON-serializable audit log of exactly which operations touched which rows and columns.
+* You see what is wrong first. Every dataset gets a health score and a list of concrete issues before anything is modified.
+* You get told why. Each issue carries a plain-language explanation, a severity, and the evidence behind it.
+* Nothing changes without your say-so. Cleaning runs as a previewable plan with a dry-run mode, so you inspect the impact before applying it.
+* Everything is recorded. Each run produces a JSON-serializable audit log of exactly which operations touched which rows and columns.
 
-The whole library is pure Python on top of `pandas`, with a deliberately small dependency footprint so it installs fast and stays out of your way.
+Core capabilities:
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+* **Dataset health inspection** — a composite 0–100 health score across completeness, uniqueness, consistency, validity, datatypes, and memory.
+* **Explainable issue detection** — every finding reports *what*, *why*, *severity*, and *evidence*.
+* **Previewable cleaning plans** — enable/disable individual steps before running anything.
+* **Safe, deterministic cleaning** — dry-run mode, before/after impact metrics, full audit trail, no unexpected mutation of your input.
+* **Real cleaning operations** — statistical fills, safe type coercion, missing-token normalization, text normalization, encoding repair, near-duplicate removal.
+* **Data profiling & contracts** — build an immutable dataset profile or validate a DataFrame against a declarative data contract.
+* **Anomaly & text-quality analysis** — deterministic IQR / z-score outlier detection and per-column text-quality metrics.
+* **Typed** — ships a `py.typed` marker.
 
-## Features
 
-- **Dataset health inspection** — a composite **0–100 health score** across completeness, uniqueness, consistency, validity, datatypes, and memory.
-- **Explainable issue detection** — every finding reports *what*, *why*, *severity*, and *evidence*, not just a boolean.
-- **Previewable cleaning plans** — enable/disable individual steps and preview them before running.
-- **Safe, deterministic cleaning** — dry-run mode, before/after impact metrics, and a full audit trail. Your input DataFrame is never mutated unexpectedly.
-- **Real cleaning operations** — statistical fills, safe type coercion, missing-token normalization, text normalization, encoding repair, and near-duplicate removal.
-- **Data profiling & contracts** — build an immutable dataset profile or validate a DataFrame against a declarative data contract.
-- **Anomaly & text-quality analysis** — deterministic IQR / z-score outlier detection and per-column text-quality metrics.
-- **Replayable plans** — serialize a cleaning plan and re-apply it to future data.
-- **Typed** — ships a `py.typed` marker, so your editor and type checker see real types.
+### Built With
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+* [![Python][Python-badge]][Python-url]
+* [![NumPy][NumPy-badge]][NumPy-url]
+* [![Pandas][Pandas-badge]][Pandas-url]
+* [![Pydantic][Pydantic-badge]][Pydantic-url]
+* [![Rich][Rich-badge]][Rich-url]
 
-## Installation
 
-Requires **Python 3.11+**. Core dependencies are just `numpy`, `pandas`, `rich`, and `pydantic`.
+<!-- GETTING STARTED -->
+## Getting Started
 
-```bash
-pip install sanitizepy
-```
+To get a local copy up and running, follow these steps.
 
-Prefer a quiet install without the dependency-resolution noise? Use `-q`:
+### Prerequisites
 
-```bash
-pip install -q sanitizepy
-```
+* Python 3.11 or later
+  ```sh
+  python --version
+  ```
 
-### Optional extras
+### Installation
 
-Some features rely on optional libraries and are only imported when you use them:
+1. Install from PyPI
+   ```sh
+   pip install sanitizepy
+   ```
+   Prefer a quiet install without pip's dependency-resolution noise?
+   ```sh
+   pip install -q sanitizepy
+   ```
+2. Or clone the repo for local development
+   ```sh
+   git clone https://github.com/tahahssn/sanitizepy.git
+   cd sanitizepy
+   ```
+3. Install with dev dependencies
+   ```sh
+   pip install -e ".[dev]"
+   ```
+4. Change git remote url to avoid accidental pushes to the base project (if you forked it)
+   ```sh
+   git remote set-url origin github_username/sanitizepy
+   git remote -v # confirm the changes
+   ```
 
-```bash
+Optional extras, only imported when you use them:
+
+```sh
 pip install "sanitizepy[fuzzy]"   # similarity-based near-duplicate detection (rapidfuzz)
 pip install "sanitizepy[text]"    # advanced encoding repair (ftfy)
 ```
 
-### From source (contributors)
 
-```bash
-git clone https://github.com/tahahssn/sanitizepy.git
-cd sanitizepy
-pip install -e ".[dev]"
-```
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-## Quick Start
+<!-- USAGE EXAMPLES -->
+## Usage
 
 ```python
 import pandas as pd
@@ -130,81 +159,26 @@ report.show()                       # rich terminal health report
 # 2. Preview a cleaning plan (nothing changes yet)
 plan = cleaner.plan(report)
 plan.show()
+plan.disable(1)                     # skip step #1 (steps are 1-based)
+plan.enable(1)                      # put it back
 
-# 3. Apply it and keep the cleaned frame
-result = cleaner.clean(df, plan=plan, dry_run=False)
-cleaned_df = result.data
-print(result.summary())
-```
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-## Usage
-
-### Inspect: understand what's wrong
-
-`inspect()` is read-only. It returns a `DatasetHealthReport` with a score, issues, and recommendations.
-
-```python
-report = cleaner.inspect(df)
-
-print(f"Health score: {report.health_score}/100")
-print(f"Critical issues: {len(report.critical_issues)}")
-print(f"Recommendations: {len(report.recommendations)}")
-
-report.show()   # formatted table of issues + recommendations
-```
-
-### Plan: preview before you touch anything
-
-A `CleaningPlan` is a previewable, editable list of steps. Steps are 1-based.
-
-```python
-plan = cleaner.plan(report)
-plan.show()
-
-plan.disable(2)   # skip step #2
-plan.enable(2)    # put it back
-```
-
-### Clean: dry-run, then apply
-
-```python
-# Dry run: compute impact without changing data
+# 3. Dry-run, then apply for real
 preview = cleaner.clean(df, plan=plan, dry_run=True)
-print(preview.summary())
-
-# Real run: returns a new cleaned DataFrame
 result = cleaner.clean(df, plan=plan, dry_run=False)
+
 cleaned_df = result.data
-
-print(result.summary())     # human-readable summary
-print(result.audit_log)     # JSON-serializable record of every operation
+print(result.summary())             # human-readable summary
+print(result.audit_log)             # JSON-serializable record of every operation
 ```
 
-Prefer the module-level shortcuts?
-
-```python
-from sanitizepy import inspect, plan, clean
-
-report = inspect(df)
-cleaning_plan = plan(report)
-result = clean(df, cleaning_plan=cleaning_plan, dry_run=True)
-```
-
-### Profile and validate
+Profiling and data contracts:
 
 ```python
 from sanitizepy import Cleaner, DataContract, ColumnContract
 
 cleaner = Cleaner()
-
-# Immutable dataset profile (datatypes, missing values, duplicates, memory, stats)
 profile = cleaner.profile(df)
 
-# Validate against a declarative contract.
-# ColumnContract fields are all optional; DataContract.columns is a
-# mapping of column name -> its expectations.
 contract = DataContract(
     columns={
         "order_id": ColumnContract(nullable=False, unique=True),
@@ -212,114 +186,96 @@ contract = DataContract(
     },
 )
 results = cleaner.validate(df, contract)
-for result in results:
-    print(result)
 ```
 
-### Direct engine access
+*For the full API — direct engine access, replayable plans, anomaly/text-quality analysis — see the [Documentation](./docs).*
 
-For granular control, compose operations yourself:
 
-```python
-from sanitizepy.cleaning import CleaningEngine, DropDuplicates, FillMissing
+<!-- ROADMAP -->
+## Roadmap
 
-engine = CleaningEngine([
-    FillMissing(value=0.0, subset=["amount"]),
-    DropDuplicates(keep="first"),
-])
+- [x] Dataset health scoring and explainable issue detection
+- [x] Previewable, editable cleaning plans with dry-run mode and audit log
+- [x] Statistical fills, type coercion, text normalization, encoding repair, near-duplicate removal
+- [x] Dataset profiling and declarative data contracts
+- [x] Anomaly detection (IQR / z-score) and text-quality analysis
+- [x] `py.typed` marker for downstream type checking
+- [ ] Command-line interface for running plans against files
+- [ ] Additional built-in rules and connectors
+- [ ] Multi-language documentation
 
-result = engine.run_with_result(df, dry_run=False)
-print(result.summary())
-print(result.audit_log)
-```
+See the [open issues](https://github.com/tahahssn/sanitizepy/issues) for a full list of proposed features and known issues.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## How It Works
-
-`sanitizepy` follows a transparent pipeline: **Detect → Explain → Recommend → Preview → Apply → Audit.**
-
-```
-   Dataset
-      |
-      v
-  Inspect / Profile      (read-only)
-      |
-      v
-  Explainable issues     (what / why / severity / evidence)
-      |
-      v
-  Cleaning plan          (previewable, editable)
-      |
-   you approve
-      |
-      v
-  Transformation engine  (deterministic, dry-run capable)
-      |
-      v
-  Result + audit log     (auditable, JSON-serializable)
-```
-
-The input DataFrame is treated as immutable; cleaning returns a new frame and records every step.
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-## Documentation
-
-Full docs live in the [`docs/`](./docs) directory:
-
-- [Installation Guide](./docs/installation.md) — requirements, virtual environments, verification, upgrades.
-- [Quick Start Guide](./docs/quickstart.md) — worked examples for inspection, cleaning, profiling, rules, and pipelines.
-- [API Reference](./docs/api.md) — classes, functions, models, and exceptions.
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
+<!-- CONTRIBUTING -->
 ## Contributing
 
-Contributions are welcome and appreciated. If you have an idea that would make `sanitizepy` better, open an issue or a pull request.
+Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
-1. Fork the project
-2. Create a feature branch: `git checkout -b feature/your-feature`
-3. Stage only the files you changed: `git add path/to/file.py`
-4. Commit your changes: `git commit -m "Add your feature"`
-5. Push the branch: `git push origin feature/your-feature`
-6. Open a pull request
+If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
 
-Please read [CONTRIBUTING.md](./CONTRIBUTING.md) and our [Code of Conduct](./CODE_OF_CONDUCT.md) first. Found a security issue? See [SECURITY.md](./SECURITY.md).
+Don't forget to give the project a star! Thanks again!
 
-### Development
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Stage only the files you changed (`git add path/to/file.py`)
+4. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+5. Push to the Branch (`git push origin feature/AmazingFeature`)
+6. Open a Pull Request
 
-```bash
-pip install -e ".[dev]"
+Before opening a pull request, make sure these all pass locally:
 
-pytest                                  # run the test suite
-ruff check src tests                    # lint
-black --check src tests                 # format check
-mypy src                                # type check
-```
+| Check | Command |
+|---|---|
+| Unit Tests | `pytest` |
+| Formatting | `black --check src tests` |
+| Linting | `ruff check src tests` |
+| Type Checking | `mypy src` |
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+Please also read [CONTRIBUTING.md](./CONTRIBUTING.md) and our [Code of Conduct](./CODE_OF_CONDUCT.md). Found a security issue? See [SECURITY.md](./SECURITY.md) — do not open a public issue for vulnerabilities.
 
-## Support
+### Top contributors:
 
-<div align="center">
-<br/>
-<a href="https://www.patreon.com/cw/SyedTahaHassan">
-  <img src="https://c5.patreon.com/external/logo/become_a_patron_button.png" alt="Become a Patron" height="48" />
+<a href="https://github.com/tahahssn/sanitizepy/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=tahahssn/sanitizepy" alt="contrib.rocks image" />
 </a>
-<br/><br/>
 
-If `sanitizepy` saved you hours of painful data cleaning, consider supporting its development.
-Every contribution helps keep it open-source, maintained, and free.
 
-**[→ Become a Patron](https://www.patreon.com/cw/SyedTahaHassan)**
-<br/>
-</div>
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
+<!-- LICENSE -->
 ## License
 
-Distributed under the MIT License. See [LICENSE](./LICENSE) for details.
+Distributed under the MIT License. See [`LICENSE`](./LICENSE) for more information.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<!-- CONTACT -->
+## Contact
+
+Syed Muhammad Taha Hassan - [@tahahssn](https://github.com/tahahssn)
+
+Project Link: [https://github.com/tahahssn/sanitizepy](https://github.com/tahahssn/sanitizepy)
+
+If `sanitizepy` saved you hours of painful data cleaning, consider [supporting its development on Patreon](https://www.patreon.com/cw/SyedTahaHassan).
+
+
+<!-- ACKNOWLEDGMENTS -->
+## Acknowledgments
+
+* [pandas](https://pandas.pydata.org/) and [NumPy](https://numpy.org/), the foundation everything here is built on
+* [Pydantic](https://docs.pydantic.dev/) for the data models and contracts
+* [Rich](https://github.com/Textualize/rich) for the terminal reports
+* [Choose an Open Source License](https://choosealicense.com)
+* [Img Shields](https://shields.io)
+* [Best-README-Template](https://github.com/othneildrew/Best-README-Template), which this README's structure is based on
+
+
+<!-- MARKDOWN LINKS & IMAGES -->
+[Python-badge]: https://img.shields.io/badge/python-3776AB?style=for-the-badge&logo=python&logoColor=white
+[Python-url]: https://www.python.org/
+[NumPy-badge]: https://img.shields.io/badge/numpy-013243?style=for-the-badge&logo=numpy&logoColor=white
+[NumPy-url]: https://numpy.org/
+[Pandas-badge]: https://img.shields.io/badge/pandas-150458?style=for-the-badge&logo=pandas&logoColor=white
+[Pandas-url]: https://pandas.pydata.org/
+[Pydantic-badge]: https://img.shields.io/badge/pydantic-E92063?style=for-the-badge&logo=pydantic&logoColor=white
+[Pydantic-url]: https://docs.pydantic.dev/
+[Rich-badge]: https://img.shields.io/badge/rich-000000?style=for-the-badge
+[Rich-url]: https://github.com/Textualize/rich
