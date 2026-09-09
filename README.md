@@ -9,7 +9,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/tahahssn/sanitizepy">
-    <img src="https://raw.githubusercontent.com/tahahssn/sanitizepy/main/assets/banner.svg" alt="Logo" width="70%">
+    <img src="https://raw.githubusercontent.com/tahahssn/sanitizepy/main/assets/banner.png" alt="Logo" width="70%">
   </a>
 
   <h3 align="center">sanitizepy</h3>
@@ -78,14 +78,14 @@ Most data-cleaning code is a pile of one-off `pandas` snippets: drop these rows,
 
 Core capabilities:
 
-* **Dataset health inspection** — a composite 0–100 health score across completeness, uniqueness, consistency, validity, datatypes, and memory.
-* **Explainable issue detection** — every finding reports *what*, *why*, *severity*, and *evidence*.
-* **Previewable cleaning plans** — enable/disable individual steps before running anything.
-* **Safe, deterministic cleaning** — dry-run mode, before/after impact metrics, full audit trail, no unexpected mutation of your input.
-* **Real cleaning operations** — statistical fills, safe type coercion, missing-token normalization, text normalization, encoding repair, near-duplicate removal.
-* **Data profiling & contracts** — build an immutable dataset profile or validate a DataFrame against a declarative data contract.
-* **Anomaly & text-quality analysis** — deterministic IQR / z-score outlier detection and per-column text-quality metrics.
-* **Typed** — ships a `py.typed` marker.
+* **Dataset health inspection:** a composite 0–100 health score across completeness, uniqueness, consistency, validity, datatypes, and memory.
+* **Explainable issue detection:** every finding reports *what*, *why*, *severity*, and *evidence*.
+* **Previewable cleaning plans:** enable/disable individual steps before running anything.
+* **Safe, deterministic cleaning:** dry-run mode, before/after impact metrics, full audit trail, no unexpected mutation of your input.
+* **Real cleaning operations:** statistical fills, safe type coercion, missing-token normalization, text normalization, encoding repair, near-duplicate removal.
+* **Data profiling & contracts:** build an immutable dataset profile or validate a DataFrame against a declarative data contract.
+* **Anomaly & text-quality analysis:** deterministic IQR / z-score outlier detection and per-column text-quality metrics.
+* **Typed:** ships a `py.typed` marker.
 
 
 ### Built With
