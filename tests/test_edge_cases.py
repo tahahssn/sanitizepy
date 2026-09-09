@@ -13,7 +13,18 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from sanitizepy import Cleaner
+from sanitizepy import (
+    AnomalyInspector,
+    Cleaner,
+    DatasetProfiler,
+    EncodingRepairOperation,
+    MissingTokenOperation,
+    NearDuplicateDetector,
+    NearDuplicateRemovalOperation,
+    TextNormalizationOperation,
+    TextQualityAnalyzer,
+    TypeCoercionOperation,
+)
 from sanitizepy.cleaning import (
     CleaningEngine,
     CleaningResult,
@@ -23,6 +34,7 @@ from sanitizepy.cleaning import (
     FillMissing,
     OperationResult,
 )
+from sanitizepy.exceptions import DataTypeConversionError
 from sanitizepy.inspection.detector import IssueDetector
 from sanitizepy.inspection.health import DatasetHealthReport
 
@@ -243,3 +255,576 @@ class TestCleanerEdgeCases:
         df = pd.DataFrame({"a": [1, 2, 3], "empty": [None, None, None]})
         result = Cleaner().clean(df, dry_run=False)
         assert "empty" not in result.data.columns
+
+
+# ===========================================================================
+# Edge-case regression coverage for production-grade-evolution capabilities
+# ===========================================================================
+#
+# Task 22.2: exercise empty / single-row / all-null / mixed-type / infinite /
+# wide / tall inputs across the new operations and inspectors, asserting the
+# real contracts each capability established rather than incidental behaviour:
+#
+# * Operations return a DataFrame (possibly empty) for empty input, never
+#   mutate the caller's frame, and record impact in an OperationResult.
+# * TypeCoercionOperation raises KeyError when a target column is absent.
+# * The new inspectors/analyzers raise ValueError on an empty DataFrame.
+# ---------------------------------------------------------------------------
+
+
+# ---------------------------------------------------------------------------
+# Shared edge-case fixtures
+# ---------------------------------------------------------------------------
+
+
+def _empty_df() -> pd.DataFrame:
+    return pd.DataFrame()
+
+
+def _single_row_df() -> pd.DataFrame:
+    return pd.DataFrame({"text": ["hello"], "num": [1.0]})
+
+
+def _all_null_df() -> pd.DataFrame:
+    return pd.DataFrame({"text": [None, None, None], "num": [np.nan, np.nan, np.nan]})
+
+
+def _mixed_type_df() -> pd.DataFrame:
+    return pd.DataFrame({"mixed": [1, "two", 3.0, None, True]})
+
+
+def _infinite_df() -> pd.DataFrame:
+    return pd.DataFrame({"num": [1.0, 2.0, np.inf, -np.inf, 5.0]})
+
+
+def _wide_df(n_cols: int = 200) -> pd.DataFrame:
+    return pd.DataFrame({f"col_{i}": ["a", "b", "c"] for i in range(n_cols)})
+
+
+def _tall_df(n_rows: int = 10_000) -> pd.DataFrame:
+    return pd.DataFrame(
+        {
+            "text": [f"value {i % 7}" for i in range(n_rows)],
+            "num": list(range(n_rows)),
+        }
+    )
+
+
+# ---------------------------------------------------------------------------
+# MissingTokenOperation edge cases
+# ---------------------------------------------------------------------------
+
+
+class TestMissingTokenOperationEdgeCases:
+
+    def test_empty_dataframe_returns_empty(self) -> None:
+        df = _empty_df()
+        out, result = MissingTokenOperation().apply_with_result(df)
+        assert out.empty
+        assert out.shape == df.shape
+        assert result.operation_name == "missing_token_normalization"
+
+    def test_single_row(self) -> None:
+        df = pd.DataFrame({"c": ["N/A"]})
+        out, result = MissingTokenOperation().apply_with_result(df)
+        assert out["c"].isna().all()
+        assert result.rows_affected == 1
+
+    def test_all_null_column_unchanged(self) -> None:
+        df = _all_null_df()
+        out, result = MissingTokenOperation().apply_with_result(df)
+        assert out["text"].isna().all()
+        assert result.rows_affected == 0
+
+    def test_mixed_type_column(self) -> None:
+        df = _mixed_type_df()
+        out, _ = MissingTokenOperation().apply_with_result(df)
+        # No token strings present; values preserved (non-str untouched).
+        assert out.shape == df.shape
+
+    def test_infinite_values_numeric_untouched(self) -> None:
+        df = _infinite_df()
+        out, result = MissingTokenOperation().apply_with_result(df)
+        assert np.isinf(out["num"]).sum() == 2
+        assert result.rows_affected == 0
+
+    def test_wide_dataframe(self) -> None:
+        df = _wide_df()
+        out, _ = MissingTokenOperation().apply_with_result(df)
+        assert out.shape == df.shape
+
+    def test_tall_dataframe(self) -> None:
+        df = _tall_df()
+        out, result = MissingTokenOperation().apply_with_result(df)
+        assert out.shape == df.shape
+        assert result.rows_affected == 0
+
+    def test_does_not_mutate_input(self) -> None:
+        df = pd.DataFrame({"c": ["null", "keep"]})
+        original = df.copy()
+        MissingTokenOperation().apply_with_result(df)
+        pd.testing.assert_frame_equal(df, original)
+
+    def test_dry_run_preserves_original(self) -> None:
+        df = pd.DataFrame({"c": ["null", "keep"]})
+        out, result = MissingTokenOperation().apply_with_result(df, dry_run=True)
+        assert result.dry_run is True
+        pd.testing.assert_frame_equal(out, df)
+
+
+# ---------------------------------------------------------------------------
+# TypeCoercionOperation edge cases
+# ---------------------------------------------------------------------------
+
+
+class TestTypeCoercionOperationEdgeCases:
+
+    def test_empty_dataframe_missing_column_raises_key_error(self) -> None:
+        # An empty frame has no columns, so a named target is absent.
+        df = _empty_df()
+        op = TypeCoercionOperation({"num": "int64"})
+        with pytest.raises(KeyError):
+            op.apply_with_result(df)
+
+    def test_empty_frame_with_existing_column(self) -> None:
+        df = pd.DataFrame({"num": pd.Series([], dtype="object")})
+        op = TypeCoercionOperation({"num": "float64"})
+        out, result = op.apply_with_result(df)
+        assert out.empty
+        assert result.rows_affected == 0
+
+    def test_single_row(self) -> None:
+        df = pd.DataFrame({"num": ["42"]})
+        out, _ = TypeCoercionOperation({"num": "int64"}).apply_with_result(df)
+        assert out["num"].iloc[0] == 42
+
+    def test_all_null_column_coerce(self) -> None:
+        df = pd.DataFrame({"num": [None, None, None]})
+        out, result = TypeCoercionOperation(
+            {"num": "float64"}, error_policy="coerce"
+        ).apply_with_result(df)
+        assert out["num"].isna().all()
+        assert result.rows_affected == 0
+
+    def test_mixed_type_coerce_records_affected(self) -> None:
+        df = pd.DataFrame({"num": [1, "two", 3.0, None]})
+        out, result = TypeCoercionOperation(
+            {"num": "float64"}, error_policy="coerce"
+        ).apply_with_result(df)
+        # "two" is non-convertible -> becomes missing and is counted.
+        assert result.rows_affected == 1
+        assert out["num"].isna().sum() == 2
+
+    def test_mixed_type_raise_policy(self) -> None:
+        df = pd.DataFrame({"num": [1, "two", 3.0]})
+        with pytest.raises(DataTypeConversionError):
+            TypeCoercionOperation({"num": "int64"}).apply_with_result(df)
+
+    def test_infinite_values_preserved(self) -> None:
+        df = _infinite_df()
+        out, _ = TypeCoercionOperation(
+            {"num": "float64"}, error_policy="coerce"
+        ).apply_with_result(df)
+        assert np.isinf(out["num"]).sum() == 2
+
+    def test_missing_column_raises_key_error(self) -> None:
+        df = _single_row_df()
+        with pytest.raises(KeyError):
+            TypeCoercionOperation({"absent": "int64"}).apply_with_result(df)
+
+    def test_wide_dataframe(self) -> None:
+        df = pd.DataFrame({f"c{i}": ["1", "2", "3"] for i in range(50)})
+        targets = {f"c{i}": "int64" for i in range(50)}
+        out, result = TypeCoercionOperation(targets).apply_with_result(df)
+        assert result.columns_affected == 50
+        assert (out.dtypes == "int64").all()
+
+    def test_tall_dataframe(self) -> None:
+        df = pd.DataFrame({"num": [str(i) for i in range(10_000)]})
+        out, _ = TypeCoercionOperation({"num": "int64"}).apply_with_result(df)
+        assert out["num"].dtype == "int64"
+
+    def test_dry_run_preserves_original(self) -> None:
+        df = pd.DataFrame({"num": ["1", "2", "3"]})
+        out, result = TypeCoercionOperation({"num": "int64"}).apply_with_result(
+            df, dry_run=True
+        )
+        assert result.dry_run is True
+        pd.testing.assert_frame_equal(out, df)
+
+
+# ---------------------------------------------------------------------------
+# TextNormalizationOperation edge cases
+# ---------------------------------------------------------------------------
+
+
+class TestTextNormalizationOperationEdgeCases:
+
+    def test_empty_dataframe_returns_empty(self) -> None:
+        df = _empty_df()
+        out, result = TextNormalizationOperation().apply_with_result(df)
+        assert out.empty
+        assert result.operation_name == "text_normalization"
+
+    def test_single_row(self) -> None:
+        df = pd.DataFrame({"c": ["  Hello  "]})
+        out, result = TextNormalizationOperation(case="lower").apply_with_result(df)
+        assert out["c"].iloc[0] == "hello"
+        assert result.rows_affected == 1
+
+    def test_all_null_column_unchanged(self) -> None:
+        df = _all_null_df()
+        out, result = TextNormalizationOperation().apply_with_result(df)
+        assert out["text"].isna().all()
+        assert result.rows_affected == 0
+
+    def test_mixed_type_column(self) -> None:
+        df = _mixed_type_df()
+        out, _ = TextNormalizationOperation().apply_with_result(df)
+        assert out.shape == df.shape
+
+    def test_infinite_values_numeric_untouched(self) -> None:
+        df = _infinite_df()
+        out, result = TextNormalizationOperation().apply_with_result(df)
+        assert np.isinf(out["num"]).sum() == 2
+        assert result.rows_affected == 0
+
+    def test_empty_after_normalization_becomes_missing(self) -> None:
+        df = pd.DataFrame({"c": ["   ", "keep"]})
+        out, _ = TextNormalizationOperation().apply_with_result(df)
+        assert pd.isna(out["c"].iloc[0])
+        assert out["c"].iloc[1] == "keep"
+
+    def test_wide_dataframe(self) -> None:
+        df = _wide_df()
+        out, _ = TextNormalizationOperation(case="upper").apply_with_result(df)
+        assert out.shape == df.shape
+        assert out["col_0"].iloc[0] == "A"
+
+    def test_tall_dataframe(self) -> None:
+        df = _tall_df()
+        out, _ = TextNormalizationOperation().apply_with_result(df)
+        assert out.shape == df.shape
+
+    def test_dry_run_preserves_original(self) -> None:
+        df = pd.DataFrame({"c": ["  x  ", "  y  "]})
+        out, result = TextNormalizationOperation().apply_with_result(df, dry_run=True)
+        assert result.dry_run is True
+        pd.testing.assert_frame_equal(out, df)
+
+
+# ---------------------------------------------------------------------------
+# EncodingRepairOperation edge cases
+# ---------------------------------------------------------------------------
+
+
+class TestEncodingRepairOperationEdgeCases:
+
+    def test_empty_dataframe_returns_empty(self) -> None:
+        df = _empty_df()
+        out, result = EncodingRepairOperation().apply_with_result(df)
+        assert out.empty
+        assert result.operation_name == "encoding_repair"
+
+    def test_single_row_clean(self) -> None:
+        df = pd.DataFrame({"c": ["clean text"]})
+        out, result = EncodingRepairOperation().apply_with_result(df)
+        assert out["c"].iloc[0] == "clean text"
+        assert result.rows_affected == 0
+
+    def test_all_null_column_unchanged(self) -> None:
+        df = _all_null_df()
+        out, result = EncodingRepairOperation().apply_with_result(df)
+        assert out["text"].isna().all()
+        assert result.rows_affected == 0
+
+    def test_mixed_type_column(self) -> None:
+        df = _mixed_type_df()
+        out, _ = EncodingRepairOperation().apply_with_result(df)
+        assert out.shape == df.shape
+
+    def test_infinite_values_numeric_untouched(self) -> None:
+        df = _infinite_df()
+        out, result = EncodingRepairOperation().apply_with_result(df)
+        assert np.isinf(out["num"]).sum() == 2
+        assert result.rows_affected == 0
+
+    def test_control_characters_repaired(self) -> None:
+        df = pd.DataFrame({"c": ["ab\x00cd"]})
+        out, result = EncodingRepairOperation().apply_with_result(df)
+        assert out["c"].iloc[0] == "abcd"
+        assert result.rows_affected == 1
+
+    def test_wide_dataframe(self) -> None:
+        df = _wide_df()
+        out, _ = EncodingRepairOperation().apply_with_result(df)
+        assert out.shape == df.shape
+
+    def test_tall_dataframe(self) -> None:
+        df = _tall_df()
+        out, _ = EncodingRepairOperation().apply_with_result(df)
+        assert out.shape == df.shape
+
+    def test_dry_run_preserves_original(self) -> None:
+        df = pd.DataFrame({"c": ["ab\x00cd", "ok"]})
+        out, result = EncodingRepairOperation().apply_with_result(df, dry_run=True)
+        assert result.dry_run is True
+        pd.testing.assert_frame_equal(out, df)
+
+
+# ---------------------------------------------------------------------------
+# NearDuplicateRemovalOperation edge cases
+# ---------------------------------------------------------------------------
+
+
+class TestNearDuplicateRemovalOperationEdgeCases:
+
+    def test_empty_dataframe_returns_empty(self) -> None:
+        df = _empty_df()
+        out, result = NearDuplicateRemovalOperation().apply_with_result(df)
+        assert out.empty
+        assert result.rows_affected == 0
+
+    def test_single_row(self) -> None:
+        df = _single_row_df()
+        out, result = NearDuplicateRemovalOperation().apply_with_result(df)
+        assert out.shape == df.shape
+        assert result.rows_affected == 0
+
+    def test_all_null_rows_collapse(self) -> None:
+        df = _all_null_df()
+        out, result = NearDuplicateRemovalOperation().apply_with_result(df)
+        # All-null rows normalize to identical keys -> one representative kept.
+        assert out.shape[0] == 1
+        assert result.rows_affected == 2
+
+    def test_mixed_type_column(self) -> None:
+        df = _mixed_type_df()
+        out, _ = NearDuplicateRemovalOperation().apply_with_result(df)
+        assert out.shape[0] <= df.shape[0]
+
+    def test_infinite_values(self) -> None:
+        df = _infinite_df()
+        out, result = NearDuplicateRemovalOperation().apply_with_result(df)
+        # All distinct numeric values -> nothing removed.
+        assert out.shape == df.shape
+        assert result.rows_affected == 0
+
+    def test_keep_last_policy(self) -> None:
+        df = pd.DataFrame({"c": ["a", "A", "b"]})
+        out, result = NearDuplicateRemovalOperation(keep="last").apply_with_result(df)
+        assert result.rows_affected == 1
+        assert out.shape[0] == 2
+
+    def test_wide_dataframe(self) -> None:
+        df = _wide_df()
+        out, result = NearDuplicateRemovalOperation().apply_with_result(df)
+        # Each row differs across the wide columns -> nothing collapses.
+        assert out.shape == df.shape
+        assert result.rows_affected == 0
+
+    def test_tall_dataframe(self) -> None:
+        df = _tall_df()
+        out, result = NearDuplicateRemovalOperation(subset=["text"]).apply_with_result(
+            df
+        )
+        # Only 7 distinct normalized text values remain.
+        assert out.shape[0] == 7
+        assert result.rows_affected == 10_000 - 7
+
+    def test_dry_run_preserves_original(self) -> None:
+        df = pd.DataFrame({"c": ["a", "A", "b"]})
+        out, result = NearDuplicateRemovalOperation().apply_with_result(
+            df, dry_run=True
+        )
+        assert result.dry_run is True
+        pd.testing.assert_frame_equal(out, df)
+
+
+# ---------------------------------------------------------------------------
+# DatasetProfiler edge cases
+# ---------------------------------------------------------------------------
+
+
+class TestDatasetProfilerEdgeCases:
+
+    def test_empty_dataframe_raises_value_error(self) -> None:
+        with pytest.raises(ValueError):
+            DatasetProfiler().profile(_empty_df())
+
+    def test_single_row(self) -> None:
+        profile = DatasetProfiler().profile(_single_row_df())
+        assert profile.row_count == 1
+        assert profile.column_count == 2
+
+    def test_all_null_dataframe(self) -> None:
+        profile = DatasetProfiler().profile(_all_null_df())
+        assert profile.row_count == 3
+        assert profile.missing_values is not None
+
+    def test_mixed_type_column(self) -> None:
+        profile = DatasetProfiler().profile(_mixed_type_df())
+        assert profile.row_count == 5
+        assert profile.column_count == 1
+
+    def test_infinite_values(self) -> None:
+        profile = DatasetProfiler().profile(_infinite_df())
+        assert profile.row_count == 5
+        assert profile.statistics is not None
+
+    def test_wide_dataframe(self) -> None:
+        profile = DatasetProfiler().profile(_wide_df())
+        assert profile.column_count == 200
+
+    def test_tall_dataframe(self) -> None:
+        profile = DatasetProfiler().profile(_tall_df())
+        assert profile.row_count == 10_000
+
+
+# ---------------------------------------------------------------------------
+# AnomalyInspector edge cases
+# ---------------------------------------------------------------------------
+
+
+class TestAnomalyInspectorEdgeCases:
+
+    def test_empty_dataframe_raises_value_error(self) -> None:
+        with pytest.raises(ValueError):
+            AnomalyInspector().inspect(_empty_df())
+
+    def test_single_row(self) -> None:
+        result = AnomalyInspector().inspect(_single_row_df(), method="zscore")
+        assert result.total_anomalies == 0
+
+    def test_all_null_numeric_column_skipped(self) -> None:
+        df = pd.DataFrame({"num": [np.nan, np.nan, np.nan]})
+        result = AnomalyInspector().inspect(df, method="zscore")
+        assert result.reports == ()
+
+    def test_mixed_type_column(self) -> None:
+        df = pd.DataFrame(
+            {"num": [1.0, 2.0, 3.0, 1000.0], "text": ["a", "b", "c", "d"]}
+        )
+        result = AnomalyInspector().inspect(df, method="iqr")
+        assert "num" in result.analyzed_columns
+        assert "text" not in result.analyzed_columns
+
+    def test_infinite_values_ignored(self) -> None:
+        df = pd.DataFrame({"num": [1.0, 2.0, 3.0, np.inf, -np.inf, 4.0]})
+        result = AnomalyInspector().inspect(df, method="zscore")
+        assert result.analyzed_columns == ("num",)
+
+    def test_wide_dataframe(self) -> None:
+        df = pd.DataFrame(
+            {f"c{i}": [float(i), float(i + 1), float(i + 2)] for i in range(50)}
+        )
+        result = AnomalyInspector().inspect(df, method="iqr")
+        assert len(result.analyzed_columns) == 50
+
+    def test_tall_dataframe(self) -> None:
+        df = pd.DataFrame({"num": [1.0] * 9_999 + [1_000.0]})
+        result = AnomalyInspector().inspect(df, method="iqr")
+        assert result.total_anomalies >= 1
+
+    def test_iqr_and_zscore_deterministic(self) -> None:
+        df = pd.DataFrame({"num": [1.0, 2.0, 3.0, 100.0]})
+        first = AnomalyInspector().inspect(df, method="zscore", seed=7)
+        second = AnomalyInspector().inspect(df, method="zscore", seed=7)
+        assert first == second
+
+
+# ---------------------------------------------------------------------------
+# NearDuplicateDetector edge cases
+# ---------------------------------------------------------------------------
+
+
+class TestNearDuplicateDetectorEdgeCases:
+
+    def test_empty_dataframe_raises_value_error(self) -> None:
+        with pytest.raises(ValueError):
+            NearDuplicateDetector().detect(_empty_df())
+
+    def test_single_row(self) -> None:
+        result = NearDuplicateDetector().detect(_single_row_df())
+        assert result.groups == ()
+        assert result.duplicate_count == 0
+
+    def test_all_null_rows_group(self) -> None:
+        result = NearDuplicateDetector().detect(_all_null_df())
+        assert result.duplicate_count == 2
+
+    def test_mixed_type_column(self) -> None:
+        result = NearDuplicateDetector().detect(_mixed_type_df())
+        assert result.duplicate_count >= 0
+
+    def test_infinite_values(self) -> None:
+        result = NearDuplicateDetector().detect(_infinite_df())
+        assert result.duplicate_count == 0
+
+    def test_case_and_whitespace_normalized(self) -> None:
+        df = pd.DataFrame({"c": ["Hello", "  hello  ", "world"]})
+        result = NearDuplicateDetector().detect(df)
+        assert result.duplicate_count == 1
+
+    def test_wide_dataframe(self) -> None:
+        result = NearDuplicateDetector().detect(_wide_df())
+        # Each of the three rows is distinct across the wide columns.
+        assert result.duplicate_count == 0
+
+    def test_tall_dataframe(self) -> None:
+        result = NearDuplicateDetector().detect(_tall_df(), subset=["text"])
+        assert result.duplicate_count == 10_000 - 7
+
+    def test_deterministic(self) -> None:
+        df = pd.DataFrame({"c": ["a", "A", "b", "B"]})
+        assert NearDuplicateDetector().detect(df) == NearDuplicateDetector().detect(df)
+
+
+# ---------------------------------------------------------------------------
+# TextQualityAnalyzer edge cases
+# ---------------------------------------------------------------------------
+
+
+class TestTextQualityAnalyzerEdgeCases:
+
+    def test_empty_dataframe_raises_value_error(self) -> None:
+        with pytest.raises(ValueError):
+            TextQualityAnalyzer().analyze(_empty_df())
+
+    def test_single_row(self) -> None:
+        results = TextQualityAnalyzer().analyze(pd.DataFrame({"c": ["hello world"]}))
+        assert len(results) == 1
+        assert results[0].non_null_count == 1
+        assert results[0].token_count_max == 2
+
+    def test_all_null_text_column(self) -> None:
+        results = TextQualityAnalyzer().analyze(pd.DataFrame({"c": [None, None, None]}))
+        assert len(results) == 1
+        assert results[0].non_null_count == 0
+
+    def test_mixed_type_column_analyzed_as_object(self) -> None:
+        results = TextQualityAnalyzer().analyze(_mixed_type_df())
+        # The object-dtype "mixed" column is analyzed after str-coercion.
+        assert len(results) == 1
+        assert results[0].column == "mixed"
+
+    def test_numeric_only_frame_yields_no_results(self) -> None:
+        results = TextQualityAnalyzer().analyze(_infinite_df())
+        assert results == ()
+
+    def test_empty_after_strip_counted(self) -> None:
+        results = TextQualityAnalyzer().analyze(pd.DataFrame({"c": ["   ", "real"]}))
+        assert results[0].empty_after_strip_count == 1
+
+    def test_wide_dataframe(self) -> None:
+        results = TextQualityAnalyzer().analyze(_wide_df())
+        assert len(results) == 200
+
+    def test_tall_dataframe(self) -> None:
+        results = TextQualityAnalyzer().analyze(_tall_df(), subset=["text"])
+        assert len(results) == 1
+        assert results[0].non_null_count == 10_000
+
+    def test_deterministic(self) -> None:
+        df = pd.DataFrame({"c": ["alpha", "beta", "gamma"]})
+        assert TextQualityAnalyzer().analyze(df) == TextQualityAnalyzer().analyze(df)

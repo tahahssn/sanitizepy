@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 
 import pandas as pd
 
@@ -10,6 +11,11 @@ from sanitizepy.config import DEFAULT_CONFIG, CleanerConfig
 from sanitizepy.inspection.detector import IssueDetector
 from sanitizepy.inspection.health import DatasetHealthReport
 from sanitizepy.logger import get_logger
+
+if TYPE_CHECKING:
+    from sanitizepy.models.contracts import DataContract
+    from sanitizepy.models.profile import DatasetProfile
+    from sanitizepy.rules.rule import RuleResult
 
 
 class Cleaner:
@@ -72,6 +78,38 @@ class Cleaner:
         self._logger.info(f"Executing data cleaning (dry_run={dry_run}).")
         active_plan = plan or self.plan(dataframe)
         return active_plan.apply(dataframe, dry_run=dry_run)
+
+    def profile(self, dataframe: pd.DataFrame) -> DatasetProfile:
+        """
+        Build an immutable dataset profile by aggregating the standalone
+        inspectors (datatypes, missing values, duplicates, memory, statistics).
+
+        This is an additive convenience facade over
+        :class:`~sanitizepy.inspection.profile.DatasetProfiler`; it never
+        mutates the input DataFrame.
+        """
+        from sanitizepy.inspection.profile import DatasetProfiler
+
+        self._logger.info("Building dataset profile.")
+        return DatasetProfiler().profile(dataframe)
+
+    def validate(
+        self,
+        dataframe: pd.DataFrame,
+        contract: DataContract,
+    ) -> tuple[RuleResult, ...]:
+        """
+        Validate a DataFrame against a declarative
+        :class:`~sanitizepy.models.contracts.DataContract`, producing one
+        ``RuleResult`` per declared expectation.
+
+        This is an additive convenience facade over
+        :meth:`~sanitizepy.rules.engine.RuleEngine.validate_contract`.
+        """
+        from sanitizepy.rules.engine import RuleEngine
+
+        self._logger.info("Validating DataFrame against data contract.")
+        return RuleEngine().validate_contract(dataframe, contract)
 
 
 # Module-level convenience functions

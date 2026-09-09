@@ -44,9 +44,15 @@ class CleanerConfig:
 
     top_values: int = DEFAULT_TOP_VALUES
 
-    missing_value_tokens: frozenset[str] = field(
-        default_factory=lambda: DEFAULT_MISSING_VALUE_TOKENS
-    )
+    missing_value_tokens: frozenset[str] = field(default_factory=frozenset)
+    """
+    Additional sentinel strings to treat as missing.
+
+    Configured tokens *extend* (not replace) ``DEFAULT_MISSING_VALUE_TOKENS``.
+    The default is an empty extension, so the built-in defaults always apply.
+    After initialization this holds the effective token set
+    (defaults + configured extension), casefolded for case-insensitive matching.
+    """
 
     # =========================================================================
     # REPORTING
@@ -82,7 +88,8 @@ class CleanerConfig:
             self.report_directory = Path(self.report_directory).expanduser().resolve()
 
         self.missing_value_tokens = frozenset(
-            token.casefold() for token in self.missing_value_tokens
+            token.casefold()
+            for token in (*DEFAULT_MISSING_VALUE_TOKENS, *self.missing_value_tokens)
         )
 
 

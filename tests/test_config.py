@@ -12,6 +12,7 @@ from sanitizepy.config import DEFAULT_CONFIG, CleanerConfig
 from sanitizepy.constants import (
     DEFAULT_ENCODING,
     DEFAULT_FLOAT_PRECISION,
+    DEFAULT_MISSING_VALUE_TOKENS,
     DEFAULT_PREVIEW_ROWS,
     DEFAULT_TOP_VALUES,
 )
@@ -106,6 +107,59 @@ class TestCleanerConfigCustomTokens:
         config = CleanerConfig(missing_value_tokens=frozenset({"N/A", "MISSING"}))
         assert "n/a" in config.missing_value_tokens
         assert "missing" in config.missing_value_tokens
+
+    # --- task 4.2 additions ---
+
+    def test_configured_tokens_extend_not_replace_defaults(self):
+        """Defaults must still be present when custom tokens are supplied."""
+        config = CleanerConfig(missing_value_tokens=frozenset({"MISSING", "TBD"}))
+        # Original defaults survive
+        for default in DEFAULT_MISSING_VALUE_TOKENS:
+            assert (
+                default.casefold() in config.missing_value_tokens
+            ), f"default token {default!r} missing after custom tokens configured"
+
+    def test_configured_tokens_added_on_top_of_defaults(self):
+        """Custom tokens appear in the effective set alongside defaults."""
+        config = CleanerConfig(missing_value_tokens=frozenset({"custom_sentinel"}))
+        assert "custom_sentinel" in config.missing_value_tokens
+        assert "na" in config.missing_value_tokens  # default still present
+
+    def test_no_custom_tokens_yields_only_defaults(self):
+        """Empty extension produces effective set equal to casefolded defaults."""
+        config = CleanerConfig()
+        expected = frozenset(t.casefold() for t in DEFAULT_MISSING_VALUE_TOKENS)
+        assert config.missing_value_tokens == expected
+
+    def test_effective_set_is_superset_of_defaults(self):
+        """Any configured extension must be a strict superset of defaults."""
+        extra = frozenset({"bespoke_token"})
+        config = CleanerConfig(missing_value_tokens=extra)
+        defaults_casefolded = frozenset(
+            t.casefold() for t in DEFAULT_MISSING_VALUE_TOKENS
+        )
+        assert defaults_casefolded.issubset(config.missing_value_tokens)
+
+    def test_duplicate_custom_token_matching_default_is_deduplicated(self):
+        """A custom token that matches a default (possibly different case) does
+        not inflate the set — frozenset semantics ensure uniqueness."""
+        config_with_dup = CleanerConfig(missing_value_tokens=frozenset({"NA", "NaN"}))
+        config_baseline = CleanerConfig()
+        # All defaults still present and no double-counting surprises
+        for token in config_baseline.missing_value_tokens:
+            assert token in config_with_dup.missing_value_tokens
+
+    def test_effective_tokens_all_casefolded(self):
+        """Every token in the final set must be fully casefolded."""
+        config = CleanerConfig(missing_value_tokens=frozenset({"MixedCase", "UPPER"}))
+        for token in config.missing_value_tokens:
+            assert token == token.casefold(), f"token {token!r} is not casefolded"
+
+    def test_empty_frozenset_extension_leaves_defaults_intact(self):
+        """Passing an explicit empty frozenset is the same as passing nothing."""
+        config_default = CleanerConfig()
+        config_empty = CleanerConfig(missing_value_tokens=frozenset())
+        assert config_default.missing_value_tokens == config_empty.missing_value_tokens
 
 
 class TestDefaultConfig:

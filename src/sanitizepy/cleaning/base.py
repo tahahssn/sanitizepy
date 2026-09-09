@@ -52,9 +52,24 @@ class CleaningOperation(ABC):
     A cleaning operation receives a pandas DataFrame and returns a cleaned
     DataFrame. Implementations must not mutate the input DataFrame unless
     explicitly documented as part of their contract.
+
+    Class Attributes
+    ----------------
+    is_chunk_safe:
+        Whether the operation produces identical results when applied
+        independently to row-wise chunks of the dataset. Defaults to
+        ``False`` so operations execute over the whole dataset unless a
+        subclass explicitly opts in.
+    is_inplace_safe:
+        Whether the operation may be applied without a defensive copy of
+        the input DataFrame when not running in dry-run mode. Defaults to
+        ``False`` so the engine keeps its conservative copy-based behavior
+        unless a subclass explicitly opts in.
     """
 
     name: str
+    is_chunk_safe: bool = False
+    is_inplace_safe: bool = False
 
     @abstractmethod
     def apply(self, dataframe: pd.DataFrame) -> pd.DataFrame:

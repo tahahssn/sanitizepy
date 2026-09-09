@@ -23,6 +23,10 @@ from .base import (
     TimestampedModel,
     VersionInfo,
 )
+from .contracts import (
+    ColumnContract,
+    DataContract,
+)
 from .inspection import (
     CategoricalStatistics,
     ColumnInspection,
@@ -47,6 +51,10 @@ from .recommendations import (
     RecommendationResult,
     RecommendationSummary,
 )
+from .replay import (
+    ReplayablePlan,
+    ReplayOperation,
+)
 from .report import (
     CleanerReport,
     ExecutionMetadata,
@@ -65,6 +73,9 @@ __all__ = [
     "ColumnReference",
     "DatasetInfo",
     "VersionInfo",
+    # Contracts
+    "ColumnContract",
+    "DataContract",
     # Inspection
     "Severity",
     "InspectionStatus",
@@ -87,6 +98,9 @@ __all__ = [
     "RecommendationGroup",
     "RecommendationSummary",
     "RecommendationResult",
+    # Replay
+    "ReplayOperation",
+    "ReplayablePlan",
     # Reports
     "CleanerReport",
     "ExecutionMetadata",

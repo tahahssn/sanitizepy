@@ -8,6 +8,8 @@ from .operations import (
     FillMissing,
 )
 from .plan import CleaningPlan, PlanStep
+from .registry import OperationRegistry, registry
+from .type_coercion import TypeCoercionOperation
 
 __all__ = [
     "CleaningEngine",
@@ -21,4 +23,7 @@ __all__ = [
     "DropMissingColumns",
     "DropMissingRows",
     "FillMissing",
+    "TypeCoercionOperation",
+    "OperationRegistry",
+    "registry",
 ]

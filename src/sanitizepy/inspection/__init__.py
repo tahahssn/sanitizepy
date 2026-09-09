@@ -13,8 +13,16 @@ Available Inspectors
 - DatatypeInspector
 - MemoryInspector
 - StatisticsInspector
+- AnomalyInspector
+- NearDuplicateDetector
+- TextQualityAnalyzer
 """
 
+from .anomalies import (
+    AnomalyInspector,
+    AnomalyResult,
+    ColumnAnomalyReport,
+)
 from .datatypes import (
     ColumnTypeReport,
     DatatypeInspectionResult,
@@ -38,11 +46,19 @@ from .missing import (
     MissingSummary,
     MissingValueInspector,
 )
+from .near_duplicates import (
+    NearDuplicateDetector,
+    NearDuplicateResult,
+)
 from .statistics import (
     NumericColumnStatistics,
     StatisticsInspectionResult,
     StatisticsInspector,
     StatisticsSummary,
+)
+from .text_quality import (
+    TextQualityAnalyzer,
+    TextQualityResult,
 )
 
 __all__ = [
@@ -70,4 +86,14 @@ __all__ = [
     "StatisticsInspectionResult",
     "StatisticsSummary",
     "NumericColumnStatistics",
+    # Anomalies
+    "AnomalyInspector",
+    "AnomalyResult",
+    "ColumnAnomalyReport",
+    # Near-duplicates
+    "NearDuplicateDetector",
+    "NearDuplicateResult",
+    # Text quality
+    "TextQualityAnalyzer",
+    "TextQualityResult",
 ]

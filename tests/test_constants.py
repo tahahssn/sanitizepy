@@ -6,6 +6,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from sanitizepy.constants import (
     BOOLEAN_DTYPES,
     BYTES_IN_GB,
@@ -102,6 +104,44 @@ class TestMissingValueTokens:
 
     def test_tokens_non_empty(self):
         assert len(DEFAULT_MISSING_VALUE_TOKENS) > 0
+
+    # --- task 4.2 additions ---
+
+    def test_tokens_contains_empty_string(self):
+        assert "" in DEFAULT_MISSING_VALUE_TOKENS
+
+    def test_tokens_contains_none_literal(self):
+        assert "none" in DEFAULT_MISSING_VALUE_TOKENS
+
+    def test_tokens_contains_nil(self):
+        assert "nil" in DEFAULT_MISSING_VALUE_TOKENS
+
+    def test_tokens_contains_n_slash_a(self):
+        assert "n/a" in DEFAULT_MISSING_VALUE_TOKENS
+
+    def test_tokens_contains_question_mark(self):
+        assert "?" in DEFAULT_MISSING_VALUE_TOKENS
+
+    def test_tokens_contains_dash(self):
+        assert "-" in DEFAULT_MISSING_VALUE_TOKENS
+
+    def test_tokens_contains_single_space(self):
+        assert " " in DEFAULT_MISSING_VALUE_TOKENS
+
+    def test_tokens_are_all_strings(self):
+        """Every element in the default token set must be a str."""
+        for token in DEFAULT_MISSING_VALUE_TOKENS:
+            assert isinstance(token, str)
+
+    def test_tokens_are_already_lowercase(self):
+        """Tokens are stored in their canonical (lowercased) form."""
+        for token in DEFAULT_MISSING_VALUE_TOKENS:
+            assert token == token.lower(), f"token {token!r} is not lowercase"
+
+    def test_tokens_immutable(self):
+        """frozenset must not expose a mutation interface."""
+        with pytest.raises(AttributeError):
+            DEFAULT_MISSING_VALUE_TOKENS.add("new_token")  # type: ignore[attr-defined]
 
 
 class TestInspectionLimits:

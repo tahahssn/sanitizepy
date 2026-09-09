@@ -125,6 +125,11 @@ class Recommendation(BaseCleanerModel):
 
     column: ColumnReference | None = None
 
+    target_dtype: str | None = Field(
+        default=None,
+        description="Target dtype for CONVERT_TYPE recommendations, if applicable.",
+    )
+
     reason: RecommendationReason
 
     impact: RecommendationImpact
