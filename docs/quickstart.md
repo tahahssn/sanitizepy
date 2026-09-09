@@ -12,6 +12,20 @@ Ensure `sanitizepy` is installed in your Python environment:
 pip install sanitizepy
 ```
 
+### Optional Extras
+
+The core library runs on pandas + the standard library. Two opt-in extras unlock additional capabilities:
+
+```bash
+# rapidfuzz-backed similarity mode for near-duplicate detection/removal
+pip install "sanitizepy[fuzzy]"
+
+# ftfy-backed advanced encoding repair and advanced text-quality analysis
+pip install "sanitizepy[text]"
+```
+
+These extras are optional; everything in this guide except the explicitly noted `method="similarity"` / `mode="advanced"` paths works without them. Using an opt-in path without its extra installed raises a `DependencyError` naming the required extra.
+
 `sanitizepy` operates primarily on `pandas.DataFrame` objects. Verify your environment:
 
 ```python
@@ -48,6 +62,16 @@ from sanitizepy.cleaning import (
     DropMissingColumns,
     DropMissingRows,
     FillMissing,
+    TypeCoercionOperation,
+)
+
+# Additional operations (re-exported from the top-level package)
+from sanitizepy import (
+    Cleaner,
+    MissingTokenOperation,
+    TextNormalizationOperation,
+    EncodingRepairOperation,
+    NearDuplicateRemovalOperation,
 )
 
 # Preprocessing & Feature Engineering Submodule
@@ -162,7 +186,8 @@ df = pd.read_csv("your_data.csv")
 
 # Configure cleaning engine with operations
 engine = CleaningEngine([
-    FillMissing(value=0.0, subset=["numeric_score"]),
+    # Fill strategies: "constant" (default), "median", "mean", "mode"
+    FillMissing(strategy="median", subset=["numeric_score"]),
     FillMissing(value="Unknown", subset=["category_name"]),
     DropDuplicates(subset=["user_id"], keep="first"),
     DropColumns(columns=["internal_notes"]),
@@ -176,9 +201,158 @@ for op_info in engine.describe():
     print(f"Applied operation: {op_info['name']}")
 ```
 
+### Detailed Results & Audit Log
+
+Use `run_with_result(...)` to get a `CleaningResult` containing per-operation metrics and an ordered, JSON-serializable audit log. Pass `dry_run=True` to evaluate the plan without mutating your DataFrame, or `chunk_size=...` to process chunk-safe operations in row-wise batches.
+
+```python
+result = engine.run_with_result(df, dry_run=True)
+
+print(result.summary())
+for entry in result.audit_log:
+    print(f"{entry['order']}. {entry['operation']}: "
+          f"{entry['before_shape']} -> {entry['after_shape']} "
+          f"({entry['rows_affected']} row(s) affected)")
+```
+
+### New Cleaning Operations
+
+Additional deterministic operations cover common raw-data problems:
+
+```python
+engine = CleaningEngine([
+    # Normalize sentinel strings ("n/a", "null", "?", "-", ...) to missing.
+    MissingTokenOperation(extra_tokens={"missing", "unknown"}, subset=["city"]),
+
+    # Unicode + whitespace + case normalization for text columns.
+    TextNormalizationOperation(
+        subset=["name"],
+        unicode_form="NFKC",
+        normalize_whitespace=True,
+        case="title",
+    ),
+
+    # Detect/repair encoding artifacts (mojibake, replacement chars).
+    # mode="advanced" requires: pip install "sanitizepy[text]"
+    EncodingRepairOperation(subset=["description"], mode="core"),
+
+    # Safe, deterministic type coercion.
+    TypeCoercionOperation(
+        target_dtypes={"age": "int64", "signup": "datetime64[ns]"},
+        error_policy="coerce",
+    ),
+
+    # Remove near-duplicate rows, keeping one representative per group.
+    # method="similarity" requires: pip install "sanitizepy[fuzzy]"
+    NearDuplicateRemovalOperation(subset=["name", "email"], method="exact_normalized"),
+])
+
+cleaned_df = engine.run(df)
+```
+
 ---
 
-## 5. Preprocessing & Feature Engineering Workflow
+## 5. High-Level Facade, Profiling & Data Contracts
+
+The top-level `Cleaner` facade offers a cohesive inspect → plan → clean workflow plus profiling and contract validation.
+
+```python
+import pandas as pd
+from sanitizepy import Cleaner, DatasetProfiler, profile_to_report
+from sanitizepy.models.contracts import ColumnContract, DataContract
+from sanitizepy.reports import TextRenderer
+
+df = pd.read_csv("your_data.csv")
+cleaner = Cleaner()
+
+# Inspect -> plan -> clean
+report = cleaner.inspect(df)
+plan = cleaner.plan(report)
+result = cleaner.clean(df, plan=plan)      # returns a CleaningResult
+cleaned_df = result.data
+
+# Dataset profile (aggregates the standalone inspectors; core-only)
+profile = cleaner.profile(df)              # == DatasetProfiler().profile(df)
+print(f"Rows: {profile.row_count}, Columns: {profile.column_count}")
+
+# Render the profile through the reports subsystem
+profile_report = profile_to_report(profile, title="Dataset Profile")
+print(TextRenderer().render(profile_report))
+
+# Validate against a declarative data contract
+contract = DataContract(columns={
+    "age": ColumnContract(dtype="int64", nullable=False, min_value=0, max_value=120),
+    "status": ColumnContract(allowed_values=("active", "inactive")),
+    "email": ColumnContract(regex=r".+@.+\..+", unique=True),
+})
+results = cleaner.validate(df, contract)   # one RuleResult per expectation
+for rr in results:
+    status = "PASSED" if rr.passed else "FAILED"
+    print(f"[{status}] {rr.rule}: {rr.message}")
+```
+
+---
+
+## 6. Near-Duplicate, Text-Quality & Anomaly Analysis
+
+Read-only, deterministic analyzers complement the inspectors.
+
+```python
+import pandas as pd
+from sanitizepy.inspection import (
+    NearDuplicateDetector,
+    TextQualityAnalyzer,
+    AnomalyInspector,
+)
+
+df = pd.read_csv("your_data.csv")
+
+# Near-duplicate detection ("exact_normalized" is core-only)
+detector = NearDuplicateDetector()
+near_dup = detector.detect(df, subset=["name", "email"], method="exact_normalized")
+print(f"Near-duplicate records: {near_dup.duplicate_count} across {len(near_dup.groups)} group(s)")
+
+# Text-quality analysis (one result per text column)
+for tq in TextQualityAnalyzer().analyze(df):
+    print(f"Column '{tq.column}': mean length {tq.character_length_mean:.1f}, "
+          f"empty-after-strip {tq.empty_after_strip_count}, "
+          f"encoding-garbage {tq.encoding_garbage_count}")
+
+# Anomaly detection ("iqr" or "zscore")
+anomalies = AnomalyInspector().inspect(df, method="zscore", zscore_threshold=3.0, seed=42)
+print(f"Total anomalies: {anomalies.total_anomalies}")
+for col_report in anomalies.reports:
+    print(f" - {col_report.column}: {col_report.anomaly_count} anomalies")
+```
+
+---
+
+## 7. Reproducible Plans & Replay
+
+A `CleaningPlan` can be serialized to a frozen, JSON-serializable snapshot and reconstructed later to replay the exact cleaning sequence.
+
+```python
+from sanitizepy import Cleaner
+
+cleaner = Cleaner()
+plan = cleaner.plan(df)
+
+# Serialize to a replayable snapshot, then persist as JSON
+replayable = plan.serialize()
+plan_json = replayable.to_json()
+
+# Later / elsewhere: reconstruct and re-run deterministically
+from sanitizepy.models.replay import ReplayablePlan
+from sanitizepy.cleaning import CleaningPlan
+
+restored = ReplayablePlan.from_json(plan_json)
+rebuilt_plan = CleaningPlan.deserialize(restored)
+result = rebuilt_plan.apply(df)
+```
+
+---
+
+## 8. Preprocessing & Feature Engineering Workflow
 
 The `FeatureEngineeringEngine` manages stateful transformation operations using a standard `fit`/`transform` contract.
 
@@ -220,7 +394,7 @@ print(f"Generated columns: {list(engineered_df.columns)}")
 
 ---
 
-## 6. Rule Validation Workflow
+## 9. Rule Validation Workflow
 
 The `RuleEngine` evaluates validation rules registered in a `RuleRegistry` against a DataFrame, returning `RuleResult` instances.
 
@@ -268,7 +442,7 @@ for result in results:
 
 ---
 
-## 7. Report Generation & Exporting Workflow
+## 10. Report Generation & Exporting Workflow
 
 The `ReportEngine` accepts processing results or dictionaries and constructs a canonical, immutable `Report`. Renderers format reports into string or JSON representations, and exporters save or return them.
 
@@ -311,7 +485,7 @@ print(f"Report written to {output_path}")
 
 ---
 
-## 8. Pipeline Composition Workflow
+## 11. Pipeline Composition Workflow
 
 The `PipelineEngine` sequences processing steps. Use `CallableStep` for functions (like `CleaningEngine.run`) and `TransformStep` for transformers exposing a `.transform()` method (like `FeatureEngineeringEngine`).
 
