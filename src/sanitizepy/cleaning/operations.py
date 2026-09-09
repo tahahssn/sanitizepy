@@ -155,14 +155,19 @@ class FillMissing(CleaningOperation):
 
         if self.strategy == "constant":
             result = dataframe.copy()
-            result.loc[:, columns] = result.loc[:, columns].fillna(self.value)
+            for column in columns:
+                mask = result[column].isna()
+                if mask.any():
+                    result.loc[mask, column] = self.value
             return result
 
         result = dataframe.copy()
         for column in columns:
             fill_value = self._fill_value_for_column(result[column])
             if fill_value is not None:
-                result[column] = result[column].fillna(fill_value)
+                mask = result[column].isna()
+                if mask.any():
+                    result.loc[mask, column] = fill_value
         return result
 
     def apply_with_result(
