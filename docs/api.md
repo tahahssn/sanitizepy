@@ -467,7 +467,7 @@ class OperationRegistry:
 - `registry`: Module-level `OperationRegistry` instance with the built-in operations pre-registered under their `name` (e.g. `"fill_missing"`, `"type_coercion"`, `"near_duplicate_removal"`).
 - **Raises**: `ValueError` from `register(...)` if a name is already registered; `KeyError` from `get(...)` for an unknown name.
 
-### 3.11. High-Level Facade & Plan (`sanitizepy` / `sanitizepy.cleaning`)
+### 3.9. High-Level Facade & Plan (`sanitizepy` / `sanitizepy.cleaning`)
 
 The top-level `Cleaner` facade and the `CleaningPlan` provide a cohesive inspect → plan → clean workflow.
 

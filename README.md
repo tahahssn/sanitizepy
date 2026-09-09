@@ -142,7 +142,7 @@ pip install "sanitizepy[text]"    # advanced encoding repair (ftfy)
 ```
 
 
-<!-- USAGE EXAMPLES -->
+<!-- USAGE EXAMPLES. -->
 ## Usage
 
 ```python

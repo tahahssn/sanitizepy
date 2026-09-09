@@ -1,4 +1,4 @@
-# Installation Guide
+﻿# Installation Guide
 
 This guide describes how to install, verify, upgrade, and configure the `sanitizepy` Python package for standard usage and local development.
 
@@ -8,19 +8,37 @@ This guide describes how to install, verify, upgrade, and configure the `sanitiz
 
 ### Supported Python Versions
 
-`sanitizepy` requires **Python 3.11** or newer (`>=3.11`).
+`sanitizepy` requires **Python 3.11** or newer (`>=3.11`). Tested against 3.11, 3.12, and 3.13.
 
 ### Runtime Dependencies
 
 When installed via `pip`, the following core dependencies are automatically resolved:
 
-| Dependency | Minimum Version | Purpose |
+| Dependency | Version Range | Purpose |
 | :--- | :--- | :--- |
-| `numpy` | `>= 2.5.1` | Numerical array operations and mathematical primitives |
-| `pandas` | `>= 3.0.5` | Tabular data structure and DataFrame operations |
-| `scipy` | `>= 1.18.0` | Statistical calculations and distribution analysis |
-| `rich` | `>= 15.0.0` | Rich terminal output and formatted rendering |
-| `pydantic` | `>= 2.13.4` | Data model validation and schema enforcement |
+| `numpy` | `>=1.24.0,<2.3.0` | Numerical array operations and mathematical primitives |
+| `pandas` | `>=2.0.0,<2.4.0` | Tabular data structure and DataFrame operations |
+| `rich` | `>=13.0.0,<15.0.0` | Rich terminal output and formatted rendering |
+| `pydantic` | `>=2.0.0,<3.0.0` | Data model validation and schema enforcement |
+
+The core install is intentionally minimal: `scipy` is **not** a dependency (nothing in the library imports it), so a standard `pip install sanitizepy` stays light and fast.
+
+### Optional Extras
+
+Two capabilities are opt-in and only pulled in when explicitly requested:
+
+| Extra | Adds | Unlocks |
+| :--- | :--- | :--- |
+| `sanitizepy[fuzzy]` | `rapidfuzz>=3.0.0,<4.0.0` | Similarity-based near-duplicate detection/removal (`method="similarity"`) |
+| `sanitizepy[text]` | `ftfy>=6.0.0,<7.0.0` | Advanced encoding repair (`mode="advanced"`) |
+
+```bash
+pip install "sanitizepy[fuzzy]"
+pip install "sanitizepy[text]"
+pip install "sanitizepy[fuzzy,text]"   # both
+```
+
+Using an opt-in code path (`method="similarity"`, `mode="advanced"`) without its extra installed raises a `DependencyError` naming the missing package — it never fails silently or falls back unexpectedly.
 
 ---
 
@@ -36,6 +54,14 @@ Alternatively, use the module syntax to ensure installation into the active Pyth
 
 ```bash
 python -m pip install sanitizepy
+```
+
+### Quiet Installation
+
+`pip` prints a full dependency-resolution log by default. For a clean install with minimal output, use `-q`:
+
+```bash
+pip install -q sanitizepy
 ```
 
 ---
@@ -102,7 +128,7 @@ python -c "from sanitizepy import get_version; print(get_version())"
 Expected output:
 
 ```text
-0.1.0
+0.2.0
 ```
 
 You can also verify that the main `Cleaner` entry point imports cleanly:
@@ -134,7 +160,7 @@ pip install --upgrade sanitizepy
 To install a specific version of `sanitizepy`:
 
 ```bash
-pip install sanitizepy==0.1.0
+pip install sanitizepy==0.2.0
 ```
 
 ---
@@ -146,7 +172,7 @@ If you intend to contribute to `sanitizepy`, modify the source code, or run the 
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/sanitizepy-dev/sanitizepy.git
+   git clone https://github.com/tahahssn/sanitizepy.git
    cd sanitizepy
    ```
 
@@ -161,21 +187,32 @@ If you intend to contribute to `sanitizepy`, modify the source code, or run the 
 3. Install `sanitizepy` in editable mode with development dependencies:
 
    ```bash
-   pip install -e .[dev]
+   pip install -e ".[dev]"
+   ```
+
+   Add the optional extras too if you need them for local testing:
+
+   ```bash
+   pip install -e ".[dev,fuzzy,text]"
    ```
 
 Development dependencies installed by `.[dev]` include:
 
-- `black`: Code formatting (`>= 26.5.1`)
-- `ruff`: Fast Python linter (`>= 0.16.0`)
-- `mypy`: Static type checker (`>= 1.18.0`)
-- `pytest`: Testing framework (`>= 9.1.1`)
-- `pytest-cov`: Test coverage plugin (`>= 7.1.0`)
+- `black`: Code formatting (`>=24.0.0,<25.0.0`)
+- `ruff`: Fast Python linter (`>=0.4.0,<1.0.0`)
+- `mypy`: Static type checker (`>=1.10.0,<2.0.0`)
+- `pandas-stubs`: Type stubs for pandas (`>=2.0.0`)
+- `pytest`: Testing framework (`>=8.0.0,<9.0.0`)
+- `pytest-cov`: Test coverage plugin (`>=5.0.0,<7.0.0`)
+- `hypothesis`: Property-based testing (`>=6.100.0,<7.0.0`)
 
-4. Verify the developer setup by running tests:
+4. Verify the developer setup by running the test suite and static checks:
 
    ```bash
    pytest
+   ruff check src tests
+   black --check src tests
+   mypy src
    ```
 
 > **Important**: Editable installation (`pip install -e .`) is strictly intended for local source development. Standard users should always use `pip install sanitizepy`.
