@@ -9,7 +9,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/tahahssn/sanitizepy">
-    <img src="https://raw.githubusercontent.com/tahahssn/sanitizepy/main/assets/banner.png" alt="Logo" width="70%">
+    <img src="https://raw.githubusercontent.com/tahahssn/sanitizepy/main/assets/banner.svg" alt="Logo" width="70%">
   </a>
 
   <h3 align="center">sanitizepy</h3>
