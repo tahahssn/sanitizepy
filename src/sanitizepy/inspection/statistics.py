@@ -75,6 +75,65 @@ class StatisticsInspectionResult:
 
     reports: tuple[NumericColumnStatistics, ...]
 
+    def __repr__(self) -> str:
+        return (
+            f"StatisticsInspectionResult(analyzed_columns="
+            f"{len(self.summary.analyzed_columns)})"
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        from dataclasses import asdict
+
+        return {
+            "summary": asdict(self.summary),
+            "reports": [asdict(r) for r in self.reports],
+        }
+
+    def to_json(self) -> str:
+        import json
+
+        return json.dumps(self.to_dict(), indent=2, default=str)
+
+    def __rich_console__(self, console: Any, options: Any) -> Any:
+        from sanitizepy.ui import (
+            Text,
+            render_footer,
+            render_header,
+            render_table,
+        )
+
+        yield render_header("statistics")
+        yield Text("")
+
+        headers = ["column", "count", "mean", "median", "std", "min", "max"]
+        rows = []
+        for r in self.reports:
+            min_str = (
+                f"{r.minimum:,.1f}"
+                if not float(r.minimum).is_integer()
+                else f"{int(r.minimum):,}"
+            )
+            max_str = (
+                f"{r.maximum:,.1f}"
+                if not float(r.maximum).is_integer()
+                else f"{int(r.maximum):,}"
+            )
+            rows.append(
+                [
+                    r.column,
+                    f"{r.count:,}",
+                    f"{r.mean:,.1f}",
+                    f"{r.median:,.1f}",
+                    f"{r.standard_deviation:,.1f}",
+                    min_str,
+                    max_str,
+                ]
+            )
+
+        yield render_table(headers, rows)
+        yield Text("")
+        yield render_footer(f"{len(self.summary.analyzed_columns)} numeric columns")
+
 
 class StatisticsInspector:
     """

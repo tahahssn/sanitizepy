@@ -13,11 +13,11 @@ from typing import Final
 # VERSION
 # ============================================================================
 
-VERSION: Final[str] = "0.2.0"
+VERSION: Final[str] = "0.3.0"
 
 VERSION_INFO: Final[tuple[int, int, int]] = (
     0,
-    2,
+    3,
     0,
 )
 

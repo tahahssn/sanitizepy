@@ -63,6 +63,59 @@ class MemoryInspectionResult:
 
     memory_usage: pd.Series
 
+    def __repr__(self) -> str:
+        return (
+            f"MemoryInspectionResult(total_mb={self.summary.total_memory_mb:.2f}, "
+            f"potential_saved_mb={self.summary.estimated_saved_mb:.2f})"
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        from dataclasses import asdict
+
+        return {
+            "summary": asdict(self.summary),
+            "reports": [asdict(r) for r in self.reports],
+        }
+
+    def to_json(self) -> str:
+        import json
+
+        return json.dumps(self.to_dict(), indent=2, default=str)
+
+    def __rich_console__(self, console: Any, options: Any) -> Any:
+        from sanitizepy.ui import (
+            COLOR_META,
+            Text,
+            render_footer,
+            render_header,
+            render_metric,
+        )
+
+        yield render_header("memory")
+        yield Text("")
+
+        yield render_metric("Current memory", f"{self.summary.total_memory_mb:.1f} MB")
+        yield Text("")
+
+        yield Text("  Largest columns", style=f"bold {COLOR_META}")
+        yield Text("  " + "─" * 32, style="dim")
+
+        sorted_cols = sorted(self.reports, key=lambda r: r.memory_bytes, reverse=True)
+        for r in sorted_cols[:3]:
+            yield render_metric(r.column, f"{r.memory_mb:.1f} MB")
+
+        yield Text("")
+        yield render_metric("Potential savings", f"{self.summary.estimated_saved_mb:.1f} MB")
+
+        yield Text("")
+        yield render_footer(
+            (
+                self.summary.total_rows,
+                self.summary.total_columns,
+                self.summary.total_memory_mb,
+            )
+        )
+
 
 class MemoryInspector:
     """

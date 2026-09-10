@@ -38,6 +38,63 @@ class DuplicateInspectionResult:
 
     duplicate_count: int
 
+    def __repr__(self) -> str:
+        return (
+            f"DuplicateInspectionResult(duplicates={self.duplicate_count}, "
+            f"rate={self.summary.duplicate_percentage:.1f}%)"
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        from dataclasses import asdict
+
+        return {
+            "summary": asdict(self.summary),
+            "duplicate_count": self.duplicate_count,
+            "duplicate_indices": list(self.duplicate_indices),
+        }
+
+    def to_json(self) -> str:
+        import json
+
+        return json.dumps(self.to_dict(), indent=2, default=str)
+
+    def __rich_console__(self, console: Any, options: Any) -> Any:
+        from sanitizepy.ui import (
+            SYMBOL_OK,
+            SYMBOL_WARN,
+            Text,
+            render_footer,
+            render_header,
+            render_metric,
+            render_status_row,
+        )
+
+        yield render_header("duplicates")
+        yield Text("")
+
+        yield render_metric("Rows", f"{self.summary.total_rows:,}")
+        yield render_metric("Duplicate rows", f"{self.summary.duplicate_rows:,}")
+        yield render_metric("Unique rows", f"{self.summary.unique_rows:,}")
+        yield render_metric("Duplicate rate", f"{self.summary.duplicate_percentage:.1f}%")
+        yield Text("")
+
+        if self.duplicate_count > 0:
+            yield render_status_row(
+                SYMBOL_WARN,
+                "duplicate rows detected",
+                count=self.duplicate_count,
+            )
+        else:
+            yield render_status_row(SYMBOL_OK, "No duplicate rows detected")
+
+        yield Text("")
+        total_cols = (
+            len(self.duplicate_dataframe.columns)
+            if hasattr(self, "duplicate_dataframe") and self.duplicate_dataframe is not None
+            else 0
+        )
+        yield render_footer((self.summary.total_rows, total_cols))
+
 
 class DuplicateInspector:
     """

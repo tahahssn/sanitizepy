@@ -70,6 +70,64 @@ class NearDuplicateResult:
 
     duplicate_count: int
 
+    def __repr__(self) -> str:
+        return (
+            f"NearDuplicateResult(groups={len(self.groups)}, "
+            f"duplicates={self.duplicate_count})"
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "columns": list(self.columns),
+            "method": self.method,
+            "groups": [list(g) for g in self.groups],
+            "duplicate_count": self.duplicate_count,
+        }
+
+    def to_json(self) -> str:
+        import json
+
+        return json.dumps(self.to_dict(), indent=2, default=str)
+
+    def __rich_console__(self, console: Any, options: Any) -> Any:
+        from sanitizepy.ui import (
+            COLOR_META,
+            SYMBOL_OK,
+            SYMBOL_WARN,
+            Text,
+            render_footer,
+            render_header,
+            render_metric,
+            render_status_row,
+        )
+
+        yield render_header("near duplicates")
+        yield Text("")
+
+        yield Text("  Columns checked", style=f"bold {COLOR_META}")
+        cols_str = ", ".join(self.columns) if self.columns else "all columns"
+        yield Text(f"    {cols_str}")
+        yield Text("")
+
+        rows_involved = sum(len(g) for g in self.groups)
+        method_str = "normalized matching" if self.method == "exact_normalized" else "similarity matching"
+
+        yield render_metric("Groups detected", f"{len(self.groups):,}")
+        yield render_metric("Rows involved", f"{rows_involved:,}")
+        yield render_metric("Method", method_str)
+        yield Text("")
+
+        if self.groups:
+            yield render_status_row(
+                SYMBOL_WARN,
+                f"{len(self.groups):,} near-duplicate groups detected",
+            )
+        else:
+            yield render_status_row(SYMBOL_OK, "No near-duplicates detected")
+
+        yield Text("")
+        yield render_footer(f"{len(self.columns)} columns checked")
+
 
 def _lazy_import_rapidfuzz() -> Any:
     """

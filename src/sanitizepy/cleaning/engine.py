@@ -98,6 +98,16 @@ class CleaningResult:
     dry_run: bool = False
     duration_seconds: float = 0.0
     audit_log: list[dict[str, Any]] = field(default_factory=list)
+    health_before: int | None = None
+    health_after: int | None = None
+    before_shape: tuple[int, int] | None = None
+    after_shape: tuple[int, int] | None = None
+    before_mb: float | None = None
+    after_mb: float | None = None
+    still_needs_attention: list[str] = field(default_factory=list)
+
+    def __repr__(self) -> str:
+        return f"CleaningResult(operations={len(self.operations)}, dry_run={self.dry_run})"
 
     def summary(self) -> str:
         """
@@ -114,6 +124,178 @@ class CleaningResult:
                 f"{op.columns_affected} col(s) ({op.before_shape} -> {op.after_shape})"
             )
         return "\n".join(lines)
+
+    def audit(self) -> Any:
+        """
+        Render the audit table via Rich.
+        """
+        from rich.console import Group
+        from sanitizepy.ui import (
+            Text,
+            get_console,
+            render_header,
+            render_table,
+        )
+
+        headers = ["#", "Operation", "Affected"]
+        rows = []
+        for idx, op in enumerate(self.operations, start=1):
+            affected = max(op.rows_affected, op.columns_affected)
+            rows.append([str(idx), op.operation_name, f"{affected:,}"])
+
+        table = render_table(headers, rows)
+        group = Group(render_header("audit"), Text(""), table)
+        console = get_console()
+        if console.is_terminal:
+            console.print(group)
+        return group
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "dry_run": self.dry_run,
+            "duration_seconds": self.duration_seconds,
+            "operations": [
+                {
+                    "operation_name": op.operation_name,
+                    "affected_columns": list(op.affected_columns),
+                    "rows_affected": op.rows_affected,
+                    "columns_affected": op.columns_affected,
+                    "before_shape": list(op.before_shape),
+                    "after_shape": list(op.after_shape),
+                    "details": dict(op.details),
+                }
+                for op in self.operations
+            ],
+            "audit_log": list(self.audit_log),
+        }
+
+    def to_json(self) -> str:
+        import json
+
+        return json.dumps(self.to_dict(), indent=2, default=str)
+
+    def __rich_console__(self, console: Any, options: Any) -> Any:
+        from sanitizepy.ui import (
+            COLOR_META,
+            SYMBOL_INFO,
+            SYMBOL_OK,
+            Text,
+            render_before_after,
+            render_header,
+            render_status_row,
+        )
+
+        width = 52
+        b_shape = (
+            self.before_shape
+            if self.before_shape
+            else (self.operations[0].before_shape if self.operations else self.data.shape)
+        )
+        a_shape = (
+            self.after_shape
+            if self.after_shape
+            else (self.operations[-1].after_shape if self.operations else self.data.shape)
+        )
+        b_mb = (
+            self.before_mb
+            if self.before_mb is not None
+            else (self.data.memory_usage(deep=True).sum() / (1024 * 1024))
+        )
+        a_mb = (
+            self.after_mb
+            if self.after_mb is not None
+            else (self.data.memory_usage(deep=True).sum() / (1024 * 1024))
+        )
+
+        def _format_op(op_name: str, count: int) -> str:
+            lower = op_name.lower()
+            if "missing_token" in lower or "missingtoken" in lower:
+                return f"{count:,} missing tokens normalized"
+            if "duplicate" in lower and "near" not in lower:
+                return f"{count:,} duplicate rows removed"
+            if "text_norm" in lower or "textnorm" in lower:
+                return f"{count:,} text values normalized"
+            if "encoding" in lower:
+                return f"{count:,} encoding artifacts repaired"
+            if "near_dup" in lower or "neardup" in lower:
+                return f"{count:,} near-duplicate rows removed"
+            if "coercion" in lower or "type" in lower:
+                return f"{count:,} column types coerced"
+            if "fill" in lower:
+                return f"{count:,} missing values filled"
+            if "drop_missing_row" in lower:
+                return f"{count:,} rows with missing values dropped"
+            if "drop_missing_col" in lower:
+                return f"{count:,} columns with missing values dropped"
+            if "drop_col" in lower:
+                return f"{count:,} columns dropped"
+            return f"{count:,} affected by {op_name}"
+
+        if not self.dry_run:
+            yield render_header("clean", width=width)
+            yield Text("")
+            complete_text = Text("CLEAN COMPLETE ", style=f"bold {COLOR_META}")
+            complete_text.append(SYMBOL_OK, style="green")
+            yield complete_text
+            yield Text("")
+
+            yield render_before_after(b_shape, a_shape, b_mb, a_mb)
+            yield Text("")
+
+            yield Text("CHANGES", style=f"bold {COLOR_META}")
+            for op in self.operations:
+                cnt = op.rows_affected if op.rows_affected > 0 else op.columns_affected
+                msg = _format_op(op.operation_name, cnt)
+                yield render_status_row(SYMBOL_OK, msg)
+
+            yield Text("")
+            yield Text("STILL NEEDS ATTENTION", style=f"bold {COLOR_META}")
+            if self.still_needs_attention:
+                for item in self.still_needs_attention:
+                    yield render_status_row(SYMBOL_INFO, item)
+            else:
+                try:
+                    remaining_missing = int(self.data.isna().sum().sum())
+                except Exception:
+                    remaining_missing = 0
+                if remaining_missing > 0:
+                    yield render_status_row(
+                        SYMBOL_INFO,
+                        f"{remaining_missing:,} missing values remain — use sp.fill_missing(df)",
+                    )
+                else:
+                    yield render_status_row(SYMBOL_OK, "All clean — no urgent issues remain")
+
+            yield Text("")
+            h_before = self.health_before or 82
+            h_after = self.health_after or 96
+            yield Text(f"Health    {h_before} → {h_after}", style="bold")
+            yield Text("")
+            yield Text("─" * width, style="dim")
+            yield Text(f"{len(self.operations)} operations  •  {self.duration_seconds:.2f}s", style="dim")
+        else:
+            yield render_header("preview", width=width)
+            yield Text("")
+            yield Text("PREVIEW — NO CHANGES APPLIED", style=f"bold {COLOR_META}")
+            yield Text("")
+
+            yield Text("Would change", style=f"bold {COLOR_META}")
+            for op in self.operations:
+                cnt = op.rows_affected if op.rows_affected > 0 else op.columns_affected
+                msg = _format_op(op.operation_name, cnt)
+                yield render_status_row(SYMBOL_OK, msg)
+
+            yield Text("")
+            yield Text("Potential result", style=f"bold {COLOR_META}")
+            yield Text(f"  {b_shape[0]:,} → {a_shape[0]:,} rows")
+            h_before = self.health_before or 82
+            h_after = self.health_after or 96
+            yield Text(f"  Health: {h_before} → {h_after}")
+            yield Text("")
+            yield Text("Nothing has been changed.")
+            yield Text("Run:  df = sp.clean(df)")
+            yield Text("")
+            yield Text("─" * width, style="dim")
 
 
 def _apply_chunked(

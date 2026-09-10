@@ -61,6 +61,70 @@ class MissingInspectionResult:
 
     missing_percentages: pd.Series
 
+    def __repr__(self) -> str:
+        return (
+            f"MissingInspectionResult(missing_cells={self.summary.missing_cells}, "
+            f"columns_with_missing={len(self.summary.columns_with_missing)})"
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        from dataclasses import asdict
+
+        return {
+            "summary": asdict(self.summary),
+            "column_reports": [asdict(r) for r in self.column_reports],
+        }
+
+    def to_json(self) -> str:
+        import json
+
+        return json.dumps(self.to_dict(), indent=2, default=str)
+
+    def __rich_console__(self, console: Any, options: Any) -> Any:
+        from sanitizepy.ui import (
+            COLOR_FAIL,
+            COLOR_OK,
+            COLOR_WARN,
+            SYMBOL_OK,
+            SYMBOL_WARN,
+            Text,
+            render_footer,
+            render_header,
+            render_status_row,
+            render_table,
+        )
+
+        yield render_header("missing values")
+        yield Text("")
+
+        headers = ["column", "missing", "%"]
+        # Only show columns with missing values, sorted by missing_count descending
+        reports_with_missing = [r for r in self.column_reports if r.missing_count > 0]
+        reports_with_missing.sort(key=lambda r: r.missing_count, reverse=True)
+
+        rows = []
+        for r in reports_with_missing:
+            pct_val = r.missing_percentage
+            pct_style = COLOR_FAIL if pct_val > 10.0 else (COLOR_WARN if pct_val >= 2.0 else COLOR_OK)
+            pct_text = Text(f"{pct_val:.1f}%", style=pct_style)
+            rows.append([r.column, f"{r.missing_count:,}", pct_text])
+
+        if rows:
+            yield render_table(headers, rows)
+            yield Text("")
+
+        if self.summary.missing_cells > 0:
+            yield render_status_row(
+                SYMBOL_WARN,
+                f"missing values across {len(self.summary.columns_with_missing)} columns",
+                count=self.summary.missing_cells,
+            )
+        else:
+            yield render_status_row(SYMBOL_OK, "No missing values detected")
+
+        yield Text("")
+        yield render_footer((self.summary.total_rows, self.summary.total_columns))
+
 
 class MissingValueInspector:
     """

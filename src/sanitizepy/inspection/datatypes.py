@@ -58,6 +58,53 @@ class DatatypeInspectionResult:
     summary: DatatypeSummary
     reports: tuple[ColumnTypeReport, ...]
 
+    def __repr__(self) -> str:
+        return f"DatatypeInspectionResult(columns={self.summary.total_columns})"
+
+    def to_dict(self) -> dict[str, Any]:
+        from dataclasses import asdict
+
+        return {
+            "summary": asdict(self.summary),
+            "reports": [asdict(r) for r in self.reports],
+        }
+
+    def to_json(self) -> str:
+        import json
+
+        return json.dumps(self.to_dict(), indent=2, default=str)
+
+    def __rich_console__(self, console: Any, options: Any) -> Any:
+        from sanitizepy.ui import (
+            COLOR_OK,
+            COLOR_WARN,
+            SYMBOL_OK,
+            SYMBOL_WARN,
+            Text,
+            render_footer,
+            render_header,
+            render_table,
+        )
+
+        yield render_header("column types")
+        yield Text("")
+
+        headers = ["column", "current", "recommended", "status"]
+        rows = []
+        for r in self.reports:
+            has_rec = r.recommended_dtype is not None and r.recommended_dtype != r.dtype
+            rec = r.recommended_dtype if has_rec else r.dtype
+            status_sym = SYMBOL_WARN if has_rec else SYMBOL_OK
+            status_style = COLOR_WARN if has_rec else COLOR_OK
+            status_text = Text(status_sym, style=status_style)
+            rows.append([r.column, r.dtype, rec, status_text])
+
+        yield render_table(headers, rows)
+        yield Text("")
+        total_memory_bytes = sum(r.memory_bytes for r in self.reports)
+        mb = total_memory_bytes / (1024 * 1024)
+        yield render_footer(f"{self.summary.total_columns} columns  •  {mb:.1f} MB")
+
 
 class DatatypeInspector:
     """

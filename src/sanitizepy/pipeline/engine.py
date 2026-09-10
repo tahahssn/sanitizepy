@@ -32,6 +32,57 @@ class PipelineResult:
     steps: tuple[PipelineStepResult, ...]
     duration_seconds: float
 
+    def __repr__(self) -> str:
+        return (
+            f"PipelineResult(steps={len(self.steps)}, "
+            f"duration={self.duration_seconds:.2f}s)"
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        from dataclasses import asdict
+
+        return {
+            "duration_seconds": self.duration_seconds,
+            "steps": [asdict(s) for s in self.steps],
+        }
+
+    def to_json(self) -> str:
+        import json
+
+        return json.dumps(self.to_dict(), indent=2, default=str)
+
+    def __rich_console__(self, console: Any, options: Any) -> Any:
+        from sanitizepy.ui import (
+            COLOR_OK,
+            SYMBOL_OK,
+            Text,
+            render_footer,
+            render_header,
+            render_table,
+        )
+
+        yield render_header("pipeline")
+        yield Text("")
+
+        headers = ["Step", "Rows", "Time"]
+        rows = []
+        for s in self.steps:
+            rows.append([s.name, f"{s.output_rows:,}", f"{s.duration_seconds:.2f}s"])
+        rows.append(["Total", "", f"{self.duration_seconds:.2f}s"])
+
+        yield render_table(headers, rows)
+        yield Text("")
+
+        status_text = Text("  ")
+        status_text.append(f"{SYMBOL_OK} ", style=COLOR_OK)
+        status_text.append("Pipeline completed")
+        yield status_text
+
+        yield Text("")
+        rows_cnt = len(self.data)
+        cols_cnt = len(self.data.columns)
+        yield render_footer(f"{rows_cnt:,} rows × {cols_cnt:,} columns  •  {self.duration_seconds:.2f}s")
+
 
 class PipelineEngine:
     """Execute an ordered collection of pipeline steps.

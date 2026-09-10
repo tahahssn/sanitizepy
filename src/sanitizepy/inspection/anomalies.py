@@ -74,6 +74,63 @@ class AnomalyResult:
 
     reports: tuple[ColumnAnomalyReport, ...]
 
+    def __repr__(self) -> str:
+        return f"AnomalyResult(total_anomalies={self.total_anomalies}, method='{self.method}')"
+
+    def to_dict(self) -> dict[str, Any]:
+        from dataclasses import asdict
+
+        return {
+            "method": self.method,
+            "seed": self.seed,
+            "analyzed_columns": list(self.analyzed_columns),
+            "total_anomalies": self.total_anomalies,
+            "reports": [asdict(r) for r in self.reports],
+        }
+
+    def to_json(self) -> str:
+        import json
+
+        return json.dumps(self.to_dict(), indent=2, default=str)
+
+    def __rich_console__(self, console: Any, options: Any) -> Any:
+        from sanitizepy.ui import (
+            SYMBOL_OK,
+            SYMBOL_WARN,
+            Text,
+            render_footer,
+            render_header,
+            render_status_row,
+            render_table,
+        )
+
+        yield render_header("anomalies")
+        yield Text("")
+
+        headers = ["column", "method", "flagged"]
+        flagged_reports = [r for r in self.reports if r.anomaly_count > 0]
+        display_reports = flagged_reports if flagged_reports else self.reports
+
+        rows = []
+        for r in display_reports:
+            m_str = "IQR" if r.method == "iqr" else ("z-score" if r.method == "zscore" else str(r.method))
+            rows.append([r.column, m_str, f"{r.anomaly_count:,}"])
+
+        if rows:
+            yield render_table(headers, rows)
+            yield Text("")
+
+        if self.total_anomalies > 0:
+            yield render_status_row(
+                SYMBOL_WARN,
+                f"{self.total_anomalies:,} observations flagged — review before removing",
+            )
+        else:
+            yield render_status_row(SYMBOL_OK, "No anomalies detected")
+
+        yield Text("")
+        yield render_footer(f"{len(self.analyzed_columns)} columns analyzed")
+
 
 class AnomalyInspector:
     """

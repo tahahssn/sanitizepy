@@ -118,6 +118,49 @@ class TextQualityResult:
     boilerplate_count: int
     encoding_garbage_count: int
 
+    def __repr__(self) -> str:
+        return f"TextQualityResult(column={self.column!r}, non_null={self.non_null_count})"
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "column": self.column,
+            "non_null_count": self.non_null_count,
+            "empty_after_strip_count": self.empty_after_strip_count,
+            "character_length_min": self.character_length_min,
+            "character_length_max": self.character_length_max,
+            "character_length_mean": self.character_length_mean,
+            "character_length_median": self.character_length_median,
+            "token_count_min": self.token_count_min,
+            "token_count_max": self.token_count_max,
+            "token_count_mean": self.token_count_mean,
+            "token_count_median": self.token_count_median,
+            "boilerplate_count": self.boilerplate_count,
+            "encoding_garbage_count": self.encoding_garbage_count,
+        }
+
+    def to_json(self) -> str:
+        import json
+
+        return json.dumps(self.to_dict(), indent=2, default=str)
+
+    def __rich_console__(self, console: Any, options: Any) -> Any:
+        from sanitizepy.ui import render_header, render_table, Text
+
+        yield render_header("text quality")
+        yield Text("")
+        headers = ["column", "avg chars", "avg tokens", "empty", "encoding"]
+        pct_empty = (self.empty_after_strip_count / max(1, self.non_null_count)) * 100
+        rows = [
+            [
+                self.column,
+                f"{self.character_length_mean:.1f}",
+                f"{self.token_count_mean:.1f}",
+                f"{pct_empty:.1f}%",
+                f"{self.encoding_garbage_count:,}",
+            ]
+        ]
+        yield render_table(headers, rows)
+
 
 @dataclass(frozen=True, slots=True)
 class DatasetProfile:
@@ -126,44 +169,6 @@ class DatasetProfile:
 
     Combines the immutable results of the standalone inspectors without
     recomputing any analysis they already provide.
-
-    Attributes
-    ----------
-    row_count:
-        Number of rows in the profiled DataFrame.
-
-    column_count:
-        Number of columns in the profiled DataFrame.
-
-    datatypes:
-        Result from ``DatatypeInspector``.
-
-    missing_values:
-        Result from ``MissingValueInspector``.
-
-    duplicates:
-        Result from ``DuplicateInspector``.
-
-    memory:
-        Result from ``MemoryInspector``.
-
-    statistics:
-        Result from ``StatisticsInspector``.
-
-    text_quality:
-        Per-column ``TextQualityResult`` values. Populated by the
-        text-quality analyzer added in a later task (14.2); ``None`` when
-        text-quality analysis has not been run.
-
-    anomalies:
-        Forward-compatible slot for per-column ``AnomalyResult`` values.
-        Populated by the anomaly analyzer added in a later task; ``None``
-        when anomaly detection has not been run.
-
-    near_duplicate:
-        Forward-compatible slot for a ``NearDuplicateResult``. Populated by
-        the near-duplicate detector added in a later task; ``None`` when
-        near-duplicate detection has not been run.
     """
 
     row_count: int
@@ -181,6 +186,172 @@ class DatasetProfile:
     text_quality: tuple[TextQualityResult, ...] | None = field(default=None)
     anomalies: tuple[Any, ...] | None = field(default=None)
     near_duplicate: Any | None = field(default=None)
+
+    def __repr__(self) -> str:
+        return f"DatasetProfile(rows={self.row_count}, columns={self.column_count})"
+
+    def to_dict(self) -> dict[str, Any]:
+        from dataclasses import asdict
+
+        result: dict[str, Any] = {
+            "row_count": self.row_count,
+            "column_count": self.column_count,
+            "datatypes": (
+                self.datatypes.to_dict()
+                if hasattr(self.datatypes, "to_dict")
+                else asdict(self.datatypes)
+            ),
+            "missing_values": (
+                self.missing_values.to_dict()
+                if hasattr(self.missing_values, "to_dict")
+                else asdict(self.missing_values)
+            ),
+            "duplicates": (
+                self.duplicates.to_dict()
+                if hasattr(self.duplicates, "to_dict")
+                else asdict(self.duplicates)
+            ),
+            "memory": (
+                self.memory.to_dict()
+                if hasattr(self.memory, "to_dict")
+                else asdict(self.memory)
+            ),
+            "statistics": (
+                self.statistics.to_dict()
+                if hasattr(self.statistics, "to_dict")
+                else asdict(self.statistics)
+            ),
+        }
+        if self.text_quality is not None:
+            result["text_quality"] = [
+                t.to_dict() if hasattr(t, "to_dict") else asdict(t)
+                for t in self.text_quality
+            ]
+        if self.anomalies is not None:
+            result["anomalies"] = [
+                a.to_dict() if hasattr(a, "to_dict") else asdict(a)
+                for a in self.anomalies
+            ]
+        if self.near_duplicate is not None:
+            result["near_duplicate"] = (
+                self.near_duplicate.to_dict()
+                if hasattr(self.near_duplicate, "to_dict")
+                else asdict(self.near_duplicate)
+            )
+        return result
+
+    def to_json(self) -> str:
+        import json
+
+        return json.dumps(self.to_dict(), indent=2, default=str)
+
+    def __rich_console__(self, console: Any, options: Any) -> Any:
+        from sanitizepy.ui import (
+            COLOR_META,
+            Text,
+            render_footer,
+            render_header,
+            render_health_score,
+            render_metric,
+            render_table,
+        )
+
+        yield render_header("profile")
+        yield Text("")
+
+        # DATASET
+        yield Text("DATASET", style=f"bold {COLOR_META}")
+        yield render_metric("Rows", f"{self.row_count:,}")
+        yield render_metric("Columns", f"{self.column_count:,}")
+        numeric_count = len(self.datatypes.summary.numeric_columns)
+        text_count = len(self.datatypes.summary.string_columns) + len(
+            self.datatypes.summary.object_columns
+        )
+        datetime_count = len(self.datatypes.summary.datetime_columns)
+        yield render_metric("Numeric", f"{numeric_count:,}")
+        yield render_metric("Text", f"{text_count:,}")
+        yield render_metric("Datetime", f"{datetime_count:,}")
+        yield render_metric("Memory", f"{self.memory.summary.total_memory_mb:.1f} MB")
+        yield Text("")
+
+        # QUALITY
+        yield Text("QUALITY", style=f"bold {COLOR_META}")
+        yield render_metric(
+            "Missing", f"{self.missing_values.summary.missing_percentage:.1f}%"
+        )
+        yield render_metric(
+            "Duplicates", f"{self.duplicates.summary.duplicate_percentage:.1f}%"
+        )
+
+        missing_cells = self.missing_values.summary.missing_cells
+        total_cells = max(1, self.missing_values.summary.total_cells)
+        dup_rows = self.duplicates.summary.duplicate_rows
+        comp_score = max(0.0, 100.0 * (1.0 - (missing_cells / total_cells)))
+        uniq_score = max(0.0, 100.0 * (1.0 - (dup_rows / max(1, self.row_count))))
+        const_cols = len(self.statistics.summary.constant_columns)
+        integ_score = max(0.0, 100.0 - (100.0 * const_cols / max(1, self.column_count)))
+        rec_diff_count = sum(
+            1
+            for r in self.datatypes.reports
+            if r.recommended_dtype and r.recommended_dtype != r.dtype
+        )
+        consist_score = max(0.0, 100.0 - 15.0 * rec_diff_count)
+        outlier_cols = sum(1 for r in self.statistics.reports if r.outlier_count > 0)
+        valid_score = max(0.0, 100.0 - 8.0 * outlier_cols)
+        health = max(
+            0,
+            min(
+                100,
+                int(
+                    round(
+                        0.35 * comp_score
+                        + 0.25 * uniq_score
+                        + 0.15 * integ_score
+                        + 0.15 * consist_score
+                        + 0.10 * valid_score
+                    )
+                ),
+            ),
+        )
+        yield render_health_score(health)
+        yield Text("")
+
+        # COLUMN PROFILE
+        yield Text("COLUMN PROFILE", style=f"bold {COLOR_META}")
+        headers = ["column", "dtype", "nulls", "unique", "min", "max"]
+        missing_map = {
+            r.column: r.missing_percentage for r in self.missing_values.column_reports
+        }
+        stats_map = {r.column: r for r in self.statistics.reports}
+
+        rows = []
+        for col_report in self.datatypes.reports:
+            c = col_report.column
+            null_pct = missing_map.get(c, 0.0)
+            null_str = f"{null_pct:.1f}%"
+            uniq_str = f"{col_report.unique_count:,}"
+
+            if c in stats_map:
+                st = stats_map[c]
+                min_str = (
+                    f"{st.minimum:,.1f}"
+                    if not float(st.minimum).is_integer()
+                    else f"{int(st.minimum):,}"
+                )
+                max_str = (
+                    f"{st.maximum:,.1f}"
+                    if not float(st.maximum).is_integer()
+                    else f"{int(st.maximum):,}"
+                )
+            else:
+                min_str = "—"
+                max_str = "—"
+
+            rows.append([c, col_report.dtype, null_str, uniq_str, min_str, max_str])
+
+        yield render_table(headers, rows)
+        yield Text("")
+        yield render_footer(self)
 
 
 __all__ = [

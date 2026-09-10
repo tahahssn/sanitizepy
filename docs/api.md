@@ -13,15 +13,16 @@ This document provides technical API documentation for all public entry points, 
 ## Table of Contents
 
 1. [Top-Level Package API](#1-top-level-package-api)
-2. [Data Inspection (`sanitizepy.inspection`)](#2-data-inspection-sanitizepyinspection)
-3. [Data Cleaning (`sanitizepy.cleaning`)](#3-data-cleaning-sanitizepycleaning)
-4. [Preprocessing & Feature Engineering (`sanitizepy.preprocessing`)](#4-preprocessing--feature-engineering-sanitizepypreprocessing)
-5. [Rule Engine (`sanitizepy.rules`)](#5-rule-engine-sanitizepyrules)
-6. [Report Engine (`sanitizepy.reports`)](#6-report-engine-sanitizepyreports)
-7. [Pipeline Engine (`sanitizepy.pipeline`)](#7-pipeline-engine-sanitizepypipeline)
-8. [Base Engine & Data Models (`sanitizepy.engine`, `sanitizepy.models`)](#8-base-engine--data-models)
-9. [Exceptions (`sanitizepy.exceptions`)](#9-exceptions-sanitizepyexceptions)
-10. [Logging (`sanitizepy.logger`)](#10-logging-sanitizepylogger)
+2. [Simple API (`sanitizepy.simple`)](#2-simple-api-sanitizepysimple)
+3. [Data Inspection (`sanitizepy.inspection`)](#3-data-inspection-sanitizepyinspection)
+4. [Data Cleaning (`sanitizepy.cleaning`)](#4-data-cleaning-sanitizepycleaning)
+5. [Preprocessing & Feature Engineering (`sanitizepy.preprocessing`)](#5-preprocessing--feature-engineering-sanitizepypreprocessing)
+6. [Rule Engine (`sanitizepy.rules`)](#6-rule-engine-sanitizepyrules)
+7. [Report Engine (`sanitizepy.reports`)](#7-report-engine-sanitizepyreports)
+8. [Pipeline Engine (`sanitizepy.pipeline`)](#8-pipeline-engine-sanitizepypipeline)
+9. [Base Engine & Data Models (`sanitizepy.engine`, `sanitizepy.models`)](#9-base-engine--data-models)
+10. [Exceptions (`sanitizepy.exceptions`)](#10-exceptions-sanitizepyexceptions)
+11. [Logging (`sanitizepy.logger`)](#11-logging-sanitizepylogger)
 
 ---
 
@@ -41,6 +42,20 @@ from sanitizepy import (
     VERSION,
     VERSION_INFO,
     get_version,
+)
+
+# Simple API — all sp.* functions are also importable directly from the top-level package:
+from sanitizepy import (
+    inspect, profile, missing, duplicates, dtypes, stats, memory,
+    anomalies, near_duplicates, text_quality,
+    clean,
+    drop_duplicates, drop_missing_rows, drop_missing_cols, drop_cols,
+    fill_missing, fix_types, fix_tokens, drop_near_duplicates,
+    dummies, normalize, standardize, rename, select, cast,
+    clean_text, normalize_text, lowercase, uppercase, titlecase, fix_encoding,
+    log, poly, interaction, ratio, datetime_features,
+    validate, contract,
+    report, serialize, replay,
 )
 ```
 
@@ -92,14 +107,124 @@ Pre-instantiated default instance of `CleanerConfig`.
 
 ### Version Constants & Functions
 
-- `VERSION` (`str`): Current package version string (e.g., `"0.1.0"`).
-- `VERSION_INFO` (`tuple[int, int, int]`): Version tuple (e.g., `(0, 1, 0)`).
+- `VERSION` (`str`): Current package version string (e.g., `"0.3.0"`).
+- `VERSION_INFO` (`tuple[int, int, int]`): Version tuple (e.g., `(0, 3, 0)`).
 - `get_version() -> str`: Function returning `VERSION`.
 - `sanitizepy.__version__`: Package version string.
 
 ---
 
-## 2. Data Inspection (`sanitizepy.inspection`)
+## 2. Simple API (`sanitizepy.simple`)
+
+A high-level, one-liner convenience layer over the expert API. All functions are also importable directly from the top-level `sanitizepy` package. Every function accepts a `pd.DataFrame` as its first positional argument, validates it (raises `TypeError` for non-DataFrames, `ValueError` for empty DataFrames), and returns a rich, printable result object that supports `to_dict()`, `to_json()`, and `__rich_console__`.
+
+Import path:
+
+```python
+import sanitizepy as sp
+# or
+from sanitizepy.simple import inspect, clean, validate  # etc.
+```
+
+### Inspection
+
+| Function | Returns | Notes |
+| :--- | :--- | :--- |
+| `inspect(df)` | `DatasetProfile` | Full dataset profile (alias: `profile(df)`) |
+| `missing(df, threshold=0.0)` | `MissingInspectionResult` | Missing value analysis |
+| `duplicates(df, subset=None)` | `DuplicateInspectionResult` | Exact duplicate row detection |
+| `dtypes(df)` | `DatatypeInspectionResult` | Dtype inspection and recommendations |
+| `stats(df)` | `StatisticsInspectionResult` | Descriptive statistics for numeric columns |
+| `memory(df)` | `MemoryInspectionResult` | Memory usage and optimization potential |
+| `anomalies(df, method="iqr", seed=None)` | `AnomalyResult` | Numeric anomaly detection (`"iqr"` or `"zscore"`) |
+| `near_duplicates(df, cols=None, method="exact_normalized")` | `NearDuplicateResult` | Near-duplicate record detection |
+| `text_quality(df, cols=None)` | `tuple[TextQualityResult, ...]` | Per-column text quality metrics |
+
+### Auto Clean
+
+| Function | Returns | Notes |
+| :--- | :--- | :--- |
+| `clean(df, verbose=True, dry_run=False)` | `CleaningResult` | Conservative auto-clean: missing tokens → text normalization → encoding repair → drop duplicates |
+
+### Manual Cleaning Operations
+
+| Function | Returns | Notes |
+| :--- | :--- | :--- |
+| `drop_duplicates(df, subset=None, keep="first")` | `pd.DataFrame` | Drop exact duplicate rows |
+| `drop_missing_rows(df, subset=None)` | `pd.DataFrame` | Drop rows with missing values |
+| `drop_missing_cols(df, subset=None)` | `pd.DataFrame` | Drop columns with missing values |
+| `drop_cols(df, columns)` | `pd.DataFrame` | Drop named columns |
+| `fill_missing(df, value=None, subset=None, strategy="constant")` | `pd.DataFrame` | Fill missing values (`"constant"`, `"mean"`, `"median"`, `"mode"`) |
+| `fix_types(df, target_dtypes, error_policy="raise")` | `pd.DataFrame` | Type coercion by column mapping |
+| `fix_tokens(df, extra_tokens=None, subset=None)` | `pd.DataFrame` | Replace sentinel strings with NaN |
+| `drop_near_duplicates(df, cols=None, method="exact_normalized", threshold=90.0, keep="first")` | `pd.DataFrame` | Remove near-duplicate records |
+
+### Transforms
+
+| Function | Returns | Notes |
+| :--- | :--- | :--- |
+| `dummies(df, columns=None, drop_first=False)` | `pd.DataFrame` | One-hot encode categorical columns |
+| `normalize(df, columns=None)` | `pd.DataFrame` | Min-max normalization |
+| `standardize(df, columns=None)` | `pd.DataFrame` | Z-score standardization |
+| `rename(df, mapping)` | `pd.DataFrame` | Rename columns by dict mapping |
+| `select(df, columns)` | `pd.DataFrame` | Select a column subset |
+| `cast(df, target_dtypes, error_policy="raise")` | `pd.DataFrame` | Alias for `fix_types` |
+
+### Text
+
+| Function | Returns | Notes |
+| :--- | :--- | :--- |
+| `clean_text(df, subset=None, unicode_form="NFKC")` | `pd.DataFrame` | Text normalization + encoding repair |
+| `normalize_text(df, subset=None, unicode_form="NFC")` | `pd.DataFrame` | Unicode normalization + whitespace collapse |
+| `lowercase(df, subset=None)` | `pd.DataFrame` | Lowercase all string columns (or `subset`) |
+| `uppercase(df, subset=None)` | `pd.DataFrame` | Uppercase all string columns (or `subset`) |
+| `titlecase(df, subset=None)` | `pd.DataFrame` | Title-case all string columns (or `subset`) |
+| `fix_encoding(df, subset=None, mode="core")` | `pd.DataFrame` | Encoding repair (`mode="advanced"` requires `sanitizepy[text]`) |
+
+### Feature Engineering
+
+| Function | Returns | Notes |
+| :--- | :--- | :--- |
+| `log(df, column, output_column=None, offset=0.0)` | `pd.DataFrame` | Natural log feature |
+| `poly(df, column, degree, include_bias=False)` | `pd.DataFrame` | Polynomial features up to `degree` |
+| `interaction(df, column_a, column_b, output_column=None)` | `pd.DataFrame` | Element-wise column product |
+| `ratio(df, numerator, denominator, output_column=None, zero_division="nan")` | `pd.DataFrame` | Element-wise division |
+| `datetime_features(df, column, features, prefix=None)` | `pd.DataFrame` | Calendar component extraction |
+
+### Validate & Contract
+
+| Function | Returns | Notes |
+| :--- | :--- | :--- |
+| `validate(df, contract=None)` | `tuple[RuleResult, ...]` | Run built-in rules (or validate against a `DataContract`) |
+| `contract(df, **column_specs)` | `tuple[RuleResult, ...]` | Inline contract shorthand |
+
+### Report & Serialize
+
+| Function | Returns | Notes |
+| :--- | :--- | :--- |
+| `report(df, title="Dataset Report", export_path=None)` | `Report` | Produce a full inspection report |
+| `serialize(plan)` | `ReplayablePlan` | Serialize a `CleaningPlan` to a replayable snapshot |
+| `replay(plan, df)` | `CleaningResult` | Reconstruct and re-run a `ReplayablePlan` |
+
+### Rich Output & Serialization
+
+All result objects returned by the Simple API implement:
+
+```python
+result.to_dict()   # -> dict[str, Any]  (or list[dict] for tuple wrappers)
+result.to_json()   # -> str  (pretty-printed JSON)
+
+# Rich terminal rendering — works with console.print() and IPython display:
+from rich.console import Console
+console = Console()
+console.print(result)   # calls __rich_console__ automatically
+```
+
+The `text_quality()` tuple wrapper and the `validate()` / `contract()` tuple wrapper both implement `to_dict()`, `to_json()`, and `__rich_console__` at the collection level so the entire result renders and serializes as a unit.
+
+---
+
+## 3. Data Inspection (`sanitizepy.inspection`)
 
 Import path:
 
@@ -300,6 +425,9 @@ class CleaningResult:
   - `audit_log` (`list[dict[str, Any]]`): Ordered, JSON-serializable log. Each entry records `order` (1-based index), UTC `timestamp`, `operation` name, `parameters` (the operation's `describe()` output), `affected_columns`, `rows_affected`, `columns_affected`, `before_shape`, `after_shape`, `dry_run`, and operation-specific `details`.
 - **Methods**:
   - `summary()`: Returns a human-readable text summary of the executed operations.
+  - `to_dict() -> dict[str, Any]`: Returns a JSON-serializable dictionary of the result (operations list, shapes, duration, audit log). `data` is excluded.
+  - `to_json() -> str`: Serializes `to_dict()` output as pretty-printed JSON.
+  - `__rich_console__(console, options)`: Rich rendering protocol — `console.print(result)` displays a formatted before/after table, change log, and health delta.
 
 ### Concrete Cleaning Operations
 
@@ -533,6 +661,11 @@ def profile_to_report(profile: DatasetProfile, *, title: str = "Dataset Profile"
 #### `DatasetProfile`
 
 Frozen dataclass with fields `row_count`, `column_count`, `datatypes`, `missing_values`, `duplicates`, `memory`, `statistics`, and forward-compatible slots `text_quality` (`tuple[TextQualityResult, ...] | None`), `anomalies`, and `near_duplicate` (default `None`).
+
+- **Methods**:
+  - `to_dict() -> dict[str, Any]`: Recursively serializes all inspector results into a JSON-serializable dict.
+  - `to_json() -> str`: Serializes `to_dict()` output as pretty-printed JSON.
+  - `__rich_console__(console, options)`: Rich rendering protocol — `console.print(profile)` displays a structured summary table of all inspectors.
 
 ### 3.11. Data Contracts
 
