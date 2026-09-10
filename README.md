@@ -145,7 +145,7 @@ pip install "sanitizepy[text]"    # advanced encoding repair (ftfy)
 <!-- USAGE EXAMPLES. -->
 ## Usage
 
-### Quick Start: Simple API (v0.2.1+)
+### Quick Start: Simple API (v0.3.0+)
 
 For most users, the simple one-liner API is all you need:
 

@@ -145,7 +145,7 @@ utf-8
 
 ---
 
-## Simple API Usage (v0.2.1+)
+## Simple API Usage (v0.3.0+)
 
 As of version 0.2.1, `sanitizepy` provides a high-level, pandas-style Simple API accessed via `sp.*` functions for one-liner operations on DataFrames.
 
