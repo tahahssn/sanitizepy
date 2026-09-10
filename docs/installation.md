@@ -1,4 +1,4 @@
-﻿# Installation Guide
+# Installation Guide
 
 This guide describes how to install, verify, upgrade, and configure the `sanitizepy` Python package for standard usage and local development.
 
@@ -128,7 +128,7 @@ python -c "from sanitizepy import get_version; print(get_version())"
 Expected output:
 
 ```text
-0.2.0
+0.2.1
 ```
 
 You can also verify that the main `Cleaner` entry point imports cleanly:
@@ -142,6 +142,49 @@ Expected output:
 ```text
 utf-8
 ```
+
+---
+
+## Simple API Usage (v0.2.1+)
+
+As of version 0.2.1, `sanitizepy` provides a high-level, pandas-style Simple API accessed via `sp.*` functions for one-liner operations on DataFrames.
+
+### Quick Example
+
+```python
+import sanitizepy as sp
+
+df = pd.read_csv("data.csv")
+
+# Inspect
+sp.inspect(df)          # overview
+sp.missing(df)          # missing values
+sp.duplicates(df)       # duplicates
+
+# Clean
+df_clean = sp.clean(df)  # auto-clean: missing tokens → text norm → encoding → dedup
+
+# Transform
+df = sp.fill_missing(df, strategy="median")
+df = sp.fix_types(df)
+df = sp.dummies(df, cols=["city"])
+
+# Validate
+sp.validate(df)
+
+# Report
+sp.report(df, save="report.json")
+```
+
+All functions accept a DataFrame as the first argument, use smart auto-detection for column types, and return rich, printable result objects that render beautifully in the terminal or notebook:
+
+```python
+result = sp.missing(df)      # MissingInspectionResult
+result.to_dict()              # → dict
+result.to_json()              # → JSON string
+```
+
+See [Simple API Reference](../api.md#2-simple-api-sanitizepysimple) for the full list of functions.
 
 ---
 
@@ -160,7 +203,7 @@ pip install --upgrade sanitizepy
 To install a specific version of `sanitizepy`:
 
 ```bash
-pip install sanitizepy==0.2.0
+pip install sanitizepy==0.2.1
 ```
 
 ---
