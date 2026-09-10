@@ -113,18 +113,21 @@ class AnomalyResult:
 
         rows = []
         for r in display_reports:
-            m_str = "IQR" if r.method == "iqr" else ("z-score" if r.method == "zscore" else str(r.method))
-            rows.append([r.column, m_str, f"{r.anomaly_count:,}"])
+            method_str = "IQR" if r.method == "iqr" else "z-score"
+            if r.method not in ("iqr", "zscore"):
+                method_str = str(r.method)
+            rows.append([r.column, method_str, f"{r.anomaly_count:,}"])
 
         if rows:
             yield render_table(headers, rows)
             yield Text("")
 
         if self.total_anomalies > 0:
-            yield render_status_row(
-                SYMBOL_WARN,
-                f"{self.total_anomalies:,} observations flagged — review before removing",
+            msg = (
+                f"{self.total_anomalies:,} observations flagged "
+                "— review before removing"
             )
+            yield render_status_row(SYMBOL_WARN, msg)
         else:
             yield render_status_row(SYMBOL_OK, "No anomalies detected")
 

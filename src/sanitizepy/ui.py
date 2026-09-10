@@ -139,7 +139,8 @@ def render_footer(
             parts.append(f"{df_or_shape[0]:,} rows × {df_or_shape[1]:,} columns")
         elif len(df_or_shape) >= 3:
             parts.append(
-                f"{df_or_shape[0]:,} rows × {df_or_shape[1]:,} columns  •  {df_or_shape[2]:.1f} MB"
+                f"{df_or_shape[0]:,} rows × {df_or_shape[1]:,} columns  •  "
+                f"{df_or_shape[2]:.1f} MB"
             )
     else:
         # Support objects with row_count / column_count / memory
@@ -151,7 +152,11 @@ def render_footer(
             cols = getattr(df_or_shape, "columns", None)
 
         mb: float | None = getattr(df_or_shape, "memory_mb", None)
-        if mb is None and hasattr(df_or_shape, "memory") and hasattr(df_or_shape.memory, "summary"):
+        if (
+            mb is None
+            and hasattr(df_or_shape, "memory")
+            and hasattr(df_or_shape.memory, "summary")
+        ):
             mb = df_or_shape.memory.summary.total_memory_mb
 
         if rows is not None and cols is not None:
@@ -194,7 +199,21 @@ def render_table(
         align = "left"
         if col_align and idx in col_align:
             align = col_align[idx]
-        elif h.lower() in ("%", "missing", "count", "nulls", "unique", "min", "max", "rows", "time", "flagged", "empty", "encoding", "affected"):
+        elif h.lower() in (
+            "%",
+            "missing",
+            "count",
+            "nulls",
+            "unique",
+            "min",
+            "max",
+            "rows",
+            "time",
+            "flagged",
+            "empty",
+            "encoding",
+            "affected",
+        ):
             align = "right"
 
         style = col_styles.get(idx) if col_styles else None
@@ -323,8 +342,12 @@ def render_before_after(
     b_rows, b_cols = before_shape
     a_rows, a_cols = after_shape
     text = Text()
-    text.append(f"Before    {b_rows:,} rows × {b_cols:,} columns  •  {before_mb:.1f} MB\n")
-    text.append(f"After     {a_rows:,} rows × {a_cols:,} columns  •  {after_mb:.1f} MB")
+    text.append(
+        f"Before    {b_rows:,} rows × {b_cols:,} columns  •  {before_mb:.1f} MB\n"
+    )
+    text.append(
+        f"After     {a_rows:,} rows × {a_cols:,} columns  •  {after_mb:.1f} MB"
+    )
     return text
 
 

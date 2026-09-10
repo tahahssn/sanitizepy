@@ -61,7 +61,7 @@ class DatatypeInspectionResult:
     def __repr__(self) -> str:
         return f"DatatypeInspectionResult(columns={self.summary.total_columns})"
 
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self) -> dict[str, object]:
         from dataclasses import asdict
 
         return {
@@ -74,7 +74,9 @@ class DatatypeInspectionResult:
 
         return json.dumps(self.to_dict(), indent=2, default=str)
 
-    def __rich_console__(self, console: Any, options: Any) -> Any:
+    def __rich_console__(
+        self, console: object, options: object
+    ) -> object:
         from sanitizepy.ui import (
             COLOR_OK,
             COLOR_WARN,

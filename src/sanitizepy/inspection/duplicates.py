@@ -44,7 +44,7 @@ class DuplicateInspectionResult:
             f"rate={self.summary.duplicate_percentage:.1f}%)"
         )
 
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self) -> dict[str, object]:
         from dataclasses import asdict
 
         return {
@@ -58,7 +58,9 @@ class DuplicateInspectionResult:
 
         return json.dumps(self.to_dict(), indent=2, default=str)
 
-    def __rich_console__(self, console: Any, options: Any) -> Any:
+    def __rich_console__(
+        self, console: object, options: object
+    ) -> object:
         from sanitizepy.ui import (
             SYMBOL_OK,
             SYMBOL_WARN,
