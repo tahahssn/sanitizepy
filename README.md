@@ -145,6 +145,54 @@ pip install "sanitizepy[text]"    # advanced encoding repair (ftfy)
 <!-- USAGE EXAMPLES. -->
 ## Usage
 
+### Quick Start: Simple API (v0.2.1+)
+
+For most users, the simple one-liner API is all you need:
+
+```python
+import pandas as pd
+import sanitizepy as sp
+
+df = pd.read_csv("your_data.csv")
+
+# Inspect your data
+sp.inspect(df)           # full overview
+sp.missing(df)           # missing values
+sp.duplicates(df)        # duplicate rows
+
+# Clean with smart defaults
+df_clean = sp.clean(df)  # auto-fixes: missing tokens → text norm → encoding → dedup
+
+# Manual step-by-step cleaning
+df = sp.fill_missing(df, strategy="median")
+df = sp.fix_types(df)
+df = sp.drop_duplicates(df)
+
+# Transform
+df = sp.dummies(df, cols=["city"])
+df = sp.normalize(df)
+
+# Validate
+sp.validate(df)
+
+# Report
+sp.report(df, save="report.json")
+```
+
+All result objects render beautifully in your terminal or notebook:
+
+```python
+result = sp.missing(df)      # MissingInspectionResult
+result.to_dict()              # export as dict
+result.to_json()              # export as JSON
+```
+
+See the [Simple API Reference](./docs/api.md#2-simple-api-sanitizepysimple) for the full list of functions.
+
+### Expert API: Full Control
+
+For advanced use cases, use the full `Cleaner` interface with explicit plans:
+
 ```python
 import pandas as pd
 from sanitizepy import Cleaner
