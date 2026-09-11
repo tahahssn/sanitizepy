@@ -54,9 +54,13 @@ class SanitizeConsole:
     def is_notebook(self) -> bool:
         """Detect whether running in Jupyter Notebook, Lab, or Google Colab."""
         try:
-            from IPython import get_ipython  # type: ignore[attr-defined]
+            import importlib
 
-            ip = get_ipython()  # type: ignore[no-untyped-call]
+            ipython_module = importlib.import_module("IPython")
+            get_ipython_fn: Any = getattr(ipython_module, "get_ipython", None)
+            if get_ipython_fn is None:
+                return False
+            ip = get_ipython_fn()
             if ip is None:
                 return False
             name = ip.__class__.__name__

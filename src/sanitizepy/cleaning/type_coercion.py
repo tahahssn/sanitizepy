@@ -22,7 +22,7 @@ operation is chunk-safe.
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 import pandas as pd
 
@@ -107,7 +107,7 @@ class TypeCoercionOperation(CleaningOperation):
                     converted = numeric
                 else:
                     try:
-                        converted = numeric.astype(target_dtype)
+                        converted = numeric.astype(cast(Any, target_dtype))
                     except (TypeError, ValueError) as exc:
                         raise DataValidationError(
                             f"Unrecognized target dtype '{target_dtype}' for "
@@ -140,7 +140,7 @@ class TypeCoercionOperation(CleaningOperation):
             )
 
         try:
-            converted = probe if is_datetime else series.astype(target_dtype)
+            converted = probe if is_datetime else series.astype(cast(Any, target_dtype))
         except (TypeError, ValueError) as exc:
             raise DataTypeConversionError(
                 f"Cannot convert column '{series.name}' to dtype "

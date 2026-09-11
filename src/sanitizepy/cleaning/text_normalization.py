@@ -32,7 +32,8 @@ from __future__ import annotations
 
 import re
 import unicodedata
-from typing import Any, Literal
+from collections.abc import Callable
+from typing import Any, Literal, cast
 
 import numpy as np
 import pandas as pd
@@ -179,7 +180,8 @@ class TextNormalizationOperation(CleaningOperation):
         """Return a new Series with each string value normalized."""
         if not (is_object_dtype(series) or is_string_dtype(series)):
             return series
-        return series.apply(self._normalize_value)
+        normalize_fn = cast(Callable[[Any], Any], self._normalize_value)
+        return cast(pd.Series, series.apply(normalize_fn))
 
     # ------------------------------------------------------------------
     # CleaningOperation interface
