@@ -179,7 +179,7 @@ class TextNormalizationOperation(CleaningOperation):
         """Return a new Series with each string value normalized."""
         if not (is_object_dtype(series) or is_string_dtype(series)):
             return series
-        return series.apply(self._normalize_value)  # type: ignore[arg-type]
+        return series.apply(self._normalize_value)
 
     # ------------------------------------------------------------------
     # CleaningOperation interface

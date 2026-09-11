@@ -75,9 +75,12 @@ class AnomalyResult:
     reports: tuple[ColumnAnomalyReport, ...]
 
     def __repr__(self) -> str:
-        return f"AnomalyResult(total_anomalies={self.total_anomalies}, method='{self.method}')"
+        return (
+            f"AnomalyResult(total_anomalies={self.total_anomalies}, "
+            f"method='{self.method}')"
+        )
 
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self) -> dict[str, object]:
         from dataclasses import asdict
 
         return {
@@ -93,7 +96,7 @@ class AnomalyResult:
 
         return json.dumps(self.to_dict(), indent=2, default=str)
 
-    def __rich_console__(self, console: Any, options: Any) -> Any:
+    def __rich_console__(self, console: object, options: object) -> object:
         from sanitizepy.ui import (
             SYMBOL_OK,
             SYMBOL_WARN,

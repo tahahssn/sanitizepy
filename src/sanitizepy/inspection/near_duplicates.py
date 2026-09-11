@@ -110,7 +110,10 @@ class NearDuplicateResult:
         yield Text("")
 
         rows_involved = sum(len(g) for g in self.groups)
-        method_str = "normalized matching" if self.method == "exact_normalized" else "similarity matching"
+        if self.method == "exact_normalized":
+            method_str = "normalized matching"
+        else:
+            method_str = "similarity matching"
 
         yield render_metric("Groups detected", f"{len(self.groups):,}")
         yield render_metric("Rows involved", f"{rows_involved:,}")

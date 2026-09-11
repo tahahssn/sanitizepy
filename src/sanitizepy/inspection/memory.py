@@ -69,7 +69,7 @@ class MemoryInspectionResult:
             f"potential_saved_mb={self.summary.estimated_saved_mb:.2f})"
         )
 
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self) -> dict[str, object]:
         from dataclasses import asdict
 
         return {
@@ -82,7 +82,7 @@ class MemoryInspectionResult:
 
         return json.dumps(self.to_dict(), indent=2, default=str)
 
-    def __rich_console__(self, console: Any, options: Any) -> Any:
+    def __rich_console__(self, console: object, options: object) -> object:
         from sanitizepy.ui import (
             COLOR_META,
             Text,
@@ -105,7 +105,8 @@ class MemoryInspectionResult:
             yield render_metric(r.column, f"{r.memory_mb:.1f} MB")
 
         yield Text("")
-        yield render_metric("Potential savings", f"{self.summary.estimated_saved_mb:.1f} MB")
+        saved_str = f"{self.summary.estimated_saved_mb:.1f} MB"
+        yield render_metric("Potential savings", saved_str)
 
         yield Text("")
         yield render_footer(

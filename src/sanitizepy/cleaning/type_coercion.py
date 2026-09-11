@@ -107,7 +107,7 @@ class TypeCoercionOperation(CleaningOperation):
                     converted = numeric
                 else:
                     try:
-                        converted = numeric.astype(target_dtype)  # type: ignore[call-overload]
+                        converted = numeric.astype(target_dtype)
                     except (TypeError, ValueError) as exc:
                         raise DataValidationError(
                             f"Unrecognized target dtype '{target_dtype}' for "
@@ -140,11 +140,7 @@ class TypeCoercionOperation(CleaningOperation):
             )
 
         try:
-            converted = (
-                probe
-                if is_datetime
-                else series.astype(target_dtype)  # type: ignore[call-overload]
-            )
+            converted = probe if is_datetime else series.astype(target_dtype)
         except (TypeError, ValueError) as exc:
             raise DataTypeConversionError(
                 f"Cannot convert column '{series.name}' to dtype "

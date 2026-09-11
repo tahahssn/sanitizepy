@@ -70,7 +70,11 @@ def sample_raw_dataframe() -> pd.DataFrame:
 
 
 def test_top_level_inspect(sample_raw_dataframe: pd.DataFrame) -> None:
-    report = sanitizepy.inspect(sample_raw_dataframe)
+    # The expert-level health-report inspection remains available, unchanged,
+    # through the Cleaner instance method (module-level `sanitizepy.inspect`
+    # is now the Simple API's one-liner profiling function, see
+    # `test_top_level_inspect_is_simple_api` below).
+    report = Cleaner().inspect(sample_raw_dataframe)
     assert isinstance(report, DatasetHealthReport)
     assert 0 <= report.health_score <= 100
     assert report.rows == 10
@@ -83,8 +87,15 @@ def test_top_level_inspect(sample_raw_dataframe: pd.DataFrame) -> None:
     assert "empty_col" in critical_cols
 
 
+def test_top_level_inspect_is_simple_api(sample_raw_dataframe: pd.DataFrame) -> None:
+    profile = sanitizepy.inspect(sample_raw_dataframe)
+    assert isinstance(profile, DatasetProfile)
+    assert profile.row_count == 10
+    assert profile.column_count == 6
+
+
 def test_top_level_plan(sample_raw_dataframe: pd.DataFrame) -> None:
-    report = sanitizepy.inspect(sample_raw_dataframe)
+    report = Cleaner().inspect(sample_raw_dataframe)
     plan_from_report = sanitizepy.plan(report)
     plan_from_df = sanitizepy.plan(sample_raw_dataframe)
 
@@ -134,14 +145,14 @@ def test_actual_clean_execution(sample_raw_dataframe: pd.DataFrame) -> None:
 
 def test_edge_case_empty_dataframe() -> None:
     empty_df = pd.DataFrame()
-    report = sanitizepy.inspect(empty_df)
+    report = Cleaner().inspect(empty_df)
     assert report.health_score == 0
     assert len(report.critical_issues) > 0
 
 
 def test_edge_case_single_cell() -> None:
     single_df = pd.DataFrame({"col": [1]})
-    report = sanitizepy.inspect(single_df)
+    report = Cleaner().inspect(single_df)
     assert report.health_score > 50
     assert report.rows == 1
     assert report.columns == 1
@@ -232,11 +243,23 @@ class TestExistingApiBehaviorPreserved:
     @given(df=_dataframes())
     @settings(max_examples=75, deadline=None)
     def test_inspect_contract(self, df: pd.DataFrame) -> None:
-        report = sanitizepy.inspect(df)
+        # Expert-level health-report inspection (Cleaner().inspect) retains
+        # its exact original contract, untouched by the Simple API.
+        report = Cleaner().inspect(df)
         assert isinstance(report, DatasetHealthReport)
         assert 0 <= report.health_score <= 100
         assert report.rows == df.shape[0]
         assert report.columns == df.shape[1]
+
+    @given(df=_dataframes())
+    @settings(max_examples=75, deadline=None)
+    def test_simple_api_inspect_contract(self, df: pd.DataFrame) -> None:
+        # Simple API `sanitizepy.inspect` (module-level) returns a
+        # DatasetProfile keyed off row/column counts of the input.
+        profile = sanitizepy.inspect(df)
+        assert isinstance(profile, DatasetProfile)
+        assert profile.row_count == df.shape[0]
+        assert profile.column_count == df.shape[1]
 
     @given(df=_dataframes())
     @settings(max_examples=75, deadline=None)

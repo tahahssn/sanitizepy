@@ -81,7 +81,11 @@ class PipelineResult:
         yield Text("")
         rows_cnt = len(self.data)
         cols_cnt = len(self.data.columns)
-        yield render_footer(f"{rows_cnt:,} rows × {cols_cnt:,} columns  •  {self.duration_seconds:.2f}s")
+        footer_str = (
+            f"{rows_cnt:,} rows × {cols_cnt:,} columns  •  "
+            f"{self.duration_seconds:.2f}s"
+        )
+        yield render_footer(footer_str)
 
 
 class PipelineEngine:

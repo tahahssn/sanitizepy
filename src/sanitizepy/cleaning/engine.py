@@ -107,7 +107,10 @@ class CleaningResult:
     still_needs_attention: list[str] = field(default_factory=list)
 
     def __repr__(self) -> str:
-        return f"CleaningResult(operations={len(self.operations)}, dry_run={self.dry_run})"
+        return (
+            f"CleaningResult(operations={len(self.operations)}, "
+            f"dry_run={self.dry_run})"
+        )
 
     def summary(self) -> str:
         """
@@ -130,6 +133,7 @@ class CleaningResult:
         Render the audit table via Rich.
         """
         from rich.console import Group
+
         from sanitizepy.ui import (
             Text,
             get_console,
@@ -186,16 +190,15 @@ class CleaningResult:
         )
 
         width = 52
-        b_shape = (
-            self.before_shape
-            if self.before_shape
-            else (self.operations[0].before_shape if self.operations else self.data.shape)
+        default_shape = self.data.shape
+        first_before = (
+            self.operations[0].before_shape if self.operations else default_shape
         )
-        a_shape = (
-            self.after_shape
-            if self.after_shape
-            else (self.operations[-1].after_shape if self.operations else self.data.shape)
+        last_after = (
+            self.operations[-1].after_shape if self.operations else default_shape
         )
+        b_shape = self.before_shape if self.before_shape else first_before
+        a_shape = self.after_shape if self.after_shape else last_after
         b_mb = (
             self.before_mb
             if self.before_mb is not None
@@ -259,12 +262,15 @@ class CleaningResult:
                 except Exception:
                     remaining_missing = 0
                 if remaining_missing > 0:
-                    yield render_status_row(
-                        SYMBOL_INFO,
-                        f"{remaining_missing:,} missing values remain — use sp.fill_missing(df)",
+                    msg = (
+                        f"{remaining_missing:,} missing values remain "
+                        "— use sp.fill_missing(df)"
                     )
+                    yield render_status_row(SYMBOL_INFO, msg)
                 else:
-                    yield render_status_row(SYMBOL_OK, "All clean — no urgent issues remain")
+                    yield render_status_row(
+                        SYMBOL_OK, "All clean — no urgent issues remain"
+                    )
 
             yield Text("")
             h_before = self.health_before or 82
@@ -272,7 +278,11 @@ class CleaningResult:
             yield Text(f"Health    {h_before} → {h_after}", style="bold")
             yield Text("")
             yield Text("─" * width, style="dim")
-            yield Text(f"{len(self.operations)} operations  •  {self.duration_seconds:.2f}s", style="dim")
+            footer_text = (
+                f"{len(self.operations)} operations  •  "
+                f"{self.duration_seconds:.2f}s"
+            )
+            yield Text(footer_text, style="dim")
         else:
             yield render_header("preview", width=width)
             yield Text("")

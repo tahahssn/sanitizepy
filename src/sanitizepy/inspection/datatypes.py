@@ -74,9 +74,7 @@ class DatatypeInspectionResult:
 
         return json.dumps(self.to_dict(), indent=2, default=str)
 
-    def __rich_console__(
-        self, console: object, options: object
-    ) -> object:
+    def __rich_console__(self, console: object, options: object) -> object:
         from sanitizepy.ui import (
             COLOR_OK,
             COLOR_WARN,
@@ -243,7 +241,7 @@ class DatatypeInspector:
         if values.empty:
             return False
 
-        return values.map(type).nunique() > 1
+        return bool(values.map(type).nunique() > 1)
 
     def _recommend_dtype(
         self,

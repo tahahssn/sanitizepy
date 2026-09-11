@@ -13,9 +13,9 @@ import functools
 import json
 import re
 import time
-from typing import Any, Sequence
+from collections.abc import Callable
+from typing import Any, ParamSpec, TypeVar
 
-import numpy as np
 import pandas as pd
 from pandas.api.types import (
     is_datetime64_any_dtype,
@@ -44,12 +44,21 @@ from sanitizepy.exceptions import (
 )
 from sanitizepy.inspection.anomalies import AnomalyInspector, AnomalyResult
 from sanitizepy.inspection.datatypes import DatatypeInspectionResult, DatatypeInspector
-from sanitizepy.inspection.duplicates import DuplicateInspectionResult, DuplicateInspector
+from sanitizepy.inspection.duplicates import (
+    DuplicateInspectionResult,
+    DuplicateInspector,
+)
 from sanitizepy.inspection.memory import MemoryInspectionResult, MemoryInspector
 from sanitizepy.inspection.missing import MissingInspectionResult, MissingValueInspector
-from sanitizepy.inspection.near_duplicates import NearDuplicateDetector, NearDuplicateResult
+from sanitizepy.inspection.near_duplicates import (
+    NearDuplicateDetector,
+    NearDuplicateResult,
+)
 from sanitizepy.inspection.profile import DatasetProfiler, profile_to_report
-from sanitizepy.inspection.statistics import StatisticsInspectionResult, StatisticsInspector
+from sanitizepy.inspection.statistics import (
+    StatisticsInspectionResult,
+    StatisticsInspector,
+)
 from sanitizepy.inspection.text_quality import TextQualityAnalyzer, TextQualityResult
 from sanitizepy.models.contracts import ColumnContract, DataContract
 from sanitizepy.models.profile import DatasetProfile
@@ -85,16 +94,14 @@ from sanitizepy.ui import (
 # Lightweight Tuple Wrappers for Rich Rendering
 # ===========================================================================
 
-class _TextQualityTuple(tuple):
+
+class _TextQualityTuple(tuple[TextQualityResult, ...]):
     """Plain tuple of TextQualityResult with __rich_console__ support."""
 
     _footer_shape: tuple[int, ...] | None = None
 
     def to_dict(self) -> list[dict[str, Any]]:
-        return [
-            item.to_dict() if hasattr(item, "to_dict") else dict(item)
-            for item in self
-        ]
+        return [item.to_dict() for item in self]
 
     def to_json(self) -> str:
         return json.dumps(self.to_dict(), indent=2, default=str)
@@ -123,7 +130,7 @@ class _TextQualityTuple(tuple):
             yield render_footer(self._footer_shape)
 
 
-class _RuleResultTuple(tuple):
+class _RuleResultTuple(tuple[RuleResult, ...]):
     """Plain tuple of RuleResult with __rich_console__ support."""
 
     _footer_shape: tuple[int, ...] | None = None
@@ -143,7 +150,9 @@ class _RuleResultTuple(tuple):
 
         total = len(self)
         passed = sum(1 for r in self if r.passed)
-        yield render_metric("Validation", f"{passed} / {total} passed", status=(passed == total))
+        yield render_metric(
+            "Validation", f"{passed} / {total} passed", status=(passed == total)
+        )
         yield Text("")
 
         for r in self:
@@ -176,9 +185,22 @@ class _RuleResultTuple(tuple):
 # Plain English Error Handling Decorator
 # ===========================================================================
 
-def _handle_errors(func: Any) -> Any:
+
+def _to_list(
+    cols: list[str] | tuple[str, ...] | None,
+) -> list[str] | None:
+    """Normalize a list-or-tuple-or-None column selector to list-or-None."""
+    return list(cols) if cols is not None else None
+
+
+_P = ParamSpec("_P")
+_R = TypeVar("_R")
+
+
+def _handle_errors(func: Callable[_P, _R]) -> Callable[_P, _R]:
     @functools.wraps(func)
-    def wrapper(df: Any, *args: Any, **kwargs: Any) -> Any:
+    def wrapper(*args: _P.args, **kwargs: _P.kwargs) -> _R:
+        df = args[0] if args else kwargs.get("df")
         if not isinstance(df, pd.DataFrame):
             raise TypeError(
                 f"First argument must be a pandas DataFrame, got {type(df).__name__}."
@@ -186,7 +208,7 @@ def _handle_errors(func: Any) -> Any:
         if df.empty:
             raise ValueError("DataFrame is empty — load your data first")
         try:
-            return func(df, *args, **kwargs)
+            return func(*args, **kwargs)
         except KeyError as e:
             col = str(e).strip("'\"")
             raise KeyError(
@@ -209,7 +231,8 @@ def _handle_errors(func: Any) -> Any:
             col = m.group(1) if m else "column"
             if "median" in msg.lower() or "numeric" in msg.lower():
                 raise DataValidationError(
-                    f"'{col}' is text — run sp.fix_types(df) first or use strategy='mode'"
+                    f"'{col}' is text — run sp.fix_types(df) first "
+                    "or use strategy='mode'"
                 ) from None
             raise
         except ValueError as e:
@@ -224,6 +247,7 @@ def _handle_errors(func: Any) -> Any:
 # ===========================================================================
 # Inspection Functions
 # ===========================================================================
+
 
 @_handle_errors
 def inspect(df: pd.DataFrame) -> DatasetProfile:
@@ -277,6 +301,9 @@ def anomalies(
     return AnomalyInspector().inspect(df, method=method, seed=seed)  # type: ignore
 
 
+_NEAR_DUP_METHODS: frozenset[str] = frozenset({"exact_normalized", "similarity"})
+
+
 @_handle_errors
 def near_duplicates(
     df: pd.DataFrame,
@@ -284,7 +311,15 @@ def near_duplicates(
     method: str = "exact_normalized",
 ) -> NearDuplicateResult:
     """Detect near-duplicate records by normalized matching or similarity."""
-    return NearDuplicateDetector().detect(df, subset=cols, method=method)  # type: ignore
+    if method not in _NEAR_DUP_METHODS:
+        raise ValueError(
+            f"method must be one of {sorted(_NEAR_DUP_METHODS)}, got '{method}'"
+        )
+    return NearDuplicateDetector().detect(
+        df,
+        subset=_to_list(cols),
+        method=method,  # type: ignore[arg-type]
+    )
 
 
 @_handle_errors
@@ -293,7 +328,7 @@ def text_quality(
 ) -> tuple[TextQualityResult, ...]:
     """Analyze text quality metrics for text/object columns."""
     analyzer = TextQualityAnalyzer()
-    res = analyzer.analyze(df, subset=cols)
+    res = analyzer.analyze(df, subset=_to_list(cols))
     wrapped = _TextQualityTuple(res)
     wrapped._footer_shape = (len(df), len(df.columns))
     return wrapped
@@ -302,6 +337,7 @@ def text_quality(
 # ===========================================================================
 # Auto Clean
 # ===========================================================================
+
 
 @_handle_errors
 def clean(
@@ -340,7 +376,9 @@ def clean(
 
     # 2. Text normalization on object/string columns
     obj_cols = [
-        c for c in working_df.columns if is_object_dtype(working_df[c]) or is_string_dtype(working_df[c])
+        c
+        for c in working_df.columns
+        if is_object_dtype(working_df[c]) or is_string_dtype(working_df[c])
     ]
     if obj_cols:
         norm_op = TextNormalizationOperation(
@@ -379,7 +417,9 @@ def clean(
 
     attention: list[str] = []
     if rem_missing > 0:
-        attention.append(f"{rem_missing:,} missing values remain — use sp.fill_missing(df)")
+        attention.append(
+            f"{rem_missing:,} missing values remain — use sp.fill_missing(df)"
+        )
 
     # Build audit log
     for idx, op in enumerate(operations, start=1):
@@ -415,14 +455,25 @@ def clean(
 # Manual Clean
 # ===========================================================================
 
+
+_KEEP_VALUES: frozenset[str] = frozenset({"first", "last"})
+
+
 @_handle_errors
 def drop_duplicates(
     df: pd.DataFrame,
     subset: list[str] | tuple[str, ...] | None = None,
-    keep: str = "first",
+    keep: str | bool = "first",
 ) -> pd.DataFrame:
     """Remove duplicate rows from DataFrame."""
-    return DropDuplicates(subset=subset, keep=keep).apply(df.copy())  # type: ignore
+    if keep is not False and keep not in _KEEP_VALUES:
+        raise ValueError(
+            f"keep must be one of {sorted(_KEEP_VALUES)} or False, got '{keep}'"
+        )
+    return DropDuplicates(
+        subset=_to_list(subset),
+        keep=keep,  # type: ignore[arg-type]
+    ).apply(df.copy())
 
 
 @_handle_errors
@@ -430,7 +481,7 @@ def drop_missing_rows(
     df: pd.DataFrame, subset: list[str] | tuple[str, ...] | None = None
 ) -> pd.DataFrame:
     """Drop rows containing missing values."""
-    return DropMissingRows(subset=subset).apply(df.copy())
+    return DropMissingRows(subset=_to_list(subset)).apply(df.copy())
 
 
 @_handle_errors
@@ -438,13 +489,16 @@ def drop_missing_cols(
     df: pd.DataFrame, subset: list[str] | tuple[str, ...] | None = None
 ) -> pd.DataFrame:
     """Drop columns that contain only or excessive missing values."""
-    return DropMissingColumns(subset=subset).apply(df.copy())
+    return DropMissingColumns(subset=_to_list(subset)).apply(df.copy())
 
 
 @_handle_errors
 def drop_cols(df: pd.DataFrame, cols: list[str] | tuple[str, ...]) -> pd.DataFrame:
     """Drop specified columns from DataFrame."""
-    return DropColumns(columns=cols).apply(df.copy())
+    return DropColumns(columns=list(cols)).apply(df.copy())
+
+
+_FILL_STRATEGIES: frozenset[str] = frozenset({"median", "mean", "mode", "constant"})
 
 
 @_handle_errors
@@ -457,16 +511,25 @@ def fill_missing(
     """
     Fill missing values.
     If value is provided -> fill with fixed value.
-    If strategy is provided -> fill with strategy ('mean', 'median', 'mode', 'constant').
+    If strategy is provided -> fill with strategy
+    ('mean', 'median', 'mode', 'constant').
     If neither provided -> auto-split (median for numeric, mode for text/object).
     """
     out = df.copy()
+    subset = _to_list(cols)
     if value is not None:
-        return FillMissing(strategy="constant", value=value, subset=cols).apply(out)
+        return FillMissing(strategy="constant", value=value, subset=subset).apply(out)
     if strategy is not None:
-        return FillMissing(strategy=strategy, subset=cols).apply(out)
+        if strategy not in _FILL_STRATEGIES:
+            raise ValueError(
+                f"strategy must be one of {sorted(_FILL_STRATEGIES)}, got '{strategy}'"
+            )
+        return FillMissing(
+            strategy=strategy,  # type: ignore[arg-type]
+            subset=subset,
+        ).apply(out)
 
-    target_cols = list(cols) if cols else list(out.columns)
+    target_cols = subset if subset else list(out.columns)
     num_cols = [c for c in target_cols if is_numeric_dtype(out[c])]
     text_cols = [c for c in target_cols if not is_numeric_dtype(out[c])]
 
@@ -478,9 +541,7 @@ def fill_missing(
 
 
 @_handle_errors
-def fix_types(
-    df: pd.DataFrame, types: dict[str, str] | None = None
-) -> pd.DataFrame:
+def fix_types(df: pd.DataFrame, types: dict[str, str] | None = None) -> pd.DataFrame:
     """
     Coerce column datatypes.
     If types dict is provided -> coerce specified columns.
@@ -489,7 +550,9 @@ def fix_types(
     """
     out = df.copy()
     if types is not None:
-        return TypeCoercionOperation(target_dtypes=types, error_policy="coerce").apply(out)
+        return TypeCoercionOperation(target_dtypes=types, error_policy="coerce").apply(
+            out
+        )
 
     skip_pattern = re.compile(r"(?i)(^|_)(id|code|phone|zip|postal)($|_)")
     auto_types: dict[str, str] = {}
@@ -515,7 +578,9 @@ def fix_types(
                 auto_types[c] = "float64"
 
     if auto_types:
-        return TypeCoercionOperation(target_dtypes=auto_types, error_policy="coerce").apply(out)
+        return TypeCoercionOperation(
+            target_dtypes=auto_types, error_policy="coerce"
+        ).apply(out)
     return out
 
 
@@ -526,7 +591,9 @@ def fix_tokens(
     extra: list[str] | tuple[str, ...] | None = None,
 ) -> pd.DataFrame:
     """Normalize string missing tokens ('N/A', 'none', 'null', etc.) into np.nan."""
-    return MissingTokenOperation(extra_tokens=extra, subset=cols).apply(df.copy())
+    return MissingTokenOperation(
+        extra_tokens=_to_list(extra), subset=_to_list(cols)
+    ).apply(df.copy())
 
 
 @_handle_errors
@@ -546,6 +613,7 @@ def drop_near_duplicates(
 # Transform Functions
 # ===========================================================================
 
+
 @_handle_errors
 def dummies(
     df: pd.DataFrame, col: str | None = None, cols: list[str] | None = None
@@ -561,7 +629,12 @@ def normalize(
 ) -> pd.DataFrame:
     """Min-max scale numeric column(s) to [0, 1]."""
     out = df.copy()
-    target_cols = [col] if col else (cols if cols else [c for c in out.columns if is_numeric_dtype(out[c])])
+    if col:
+        target_cols = [col]
+    elif cols:
+        target_cols = cols
+    else:
+        target_cols = [c for c in out.columns if is_numeric_dtype(out[c])]
     for c in target_cols:
         min_v = out[c].min()
         max_v = out[c].max()
@@ -579,7 +652,12 @@ def standardize(
 ) -> pd.DataFrame:
     """Standardize numeric column(s) to mean 0, std 1."""
     out = df.copy()
-    target_cols = [col] if col else (cols if cols else [c for c in out.columns if is_numeric_dtype(out[c])])
+    if col:
+        target_cols = [col]
+    elif cols:
+        target_cols = cols
+    else:
+        target_cols = [c for c in out.columns if is_numeric_dtype(out[c])]
     for c in target_cols:
         mean_v = out[c].mean()
         std_v = out[c].std()
@@ -601,19 +679,25 @@ def select(df: pd.DataFrame, cols: list[str]) -> pd.DataFrame:
     """Select a subset of columns."""
     missing_cols = [c for c in cols if c not in df.columns]
     if missing_cols:
-        raise KeyError(f"Column '{missing_cols[0]}' not found. Your columns are: {list(df.columns)}")
+        raise KeyError(
+            f"Column '{missing_cols[0]}' not found. "
+            f"Your columns are: {list(df.columns)}"
+        )
     return df.copy()[cols]
 
 
 @_handle_errors
 def cast(df: pd.DataFrame, col: str, to: str) -> pd.DataFrame:
     """Cast a column to target datatype."""
-    return TypeCoercionOperation(target_dtypes={col: to}, error_policy="coerce").apply(df.copy())
+    return TypeCoercionOperation(target_dtypes={col: to}, error_policy="coerce").apply(
+        df.copy()
+    )
 
 
 # ===========================================================================
 # Text Functions
 # ===========================================================================
+
 
 @_handle_errors
 def clean_text(
@@ -625,7 +709,7 @@ def clean_text(
       2. Encoding repaired
       3. Unicode normalized (NFKC) & whitespace collapsed
     """
-    target = cols or [
+    target = _to_list(cols) or [
         c for c in df.columns if is_object_dtype(df[c]) or is_string_dtype(df[c])
     ]
     if not target:
@@ -643,7 +727,7 @@ def normalize_text(
     df: pd.DataFrame, cols: list[str] | tuple[str, ...] | None = None
 ) -> pd.DataFrame:
     """Normalize text unicode to NFKC and collapse internal whitespace."""
-    target = cols or [
+    target = _to_list(cols) or [
         c for c in df.columns if is_object_dtype(df[c]) or is_string_dtype(df[c])
     ]
     return TextNormalizationOperation(
@@ -656,7 +740,7 @@ def lowercase(
     df: pd.DataFrame, cols: list[str] | tuple[str, ...] | None = None
 ) -> pd.DataFrame:
     """Convert text column(s) to lowercase."""
-    target = cols or [
+    target = _to_list(cols) or [
         c for c in df.columns if is_object_dtype(df[c]) or is_string_dtype(df[c])
     ]
     return TextNormalizationOperation(subset=target, case="lower").apply(df.copy())
@@ -667,7 +751,7 @@ def uppercase(
     df: pd.DataFrame, cols: list[str] | tuple[str, ...] | None = None
 ) -> pd.DataFrame:
     """Convert text column(s) to uppercase."""
-    target = cols or [
+    target = _to_list(cols) or [
         c for c in df.columns if is_object_dtype(df[c]) or is_string_dtype(df[c])
     ]
     return TextNormalizationOperation(subset=target, case="upper").apply(df.copy())
@@ -678,10 +762,13 @@ def titlecase(
     df: pd.DataFrame, cols: list[str] | tuple[str, ...] | None = None
 ) -> pd.DataFrame:
     """Convert text column(s) to title case."""
-    target = cols or [
+    target = _to_list(cols) or [
         c for c in df.columns if is_object_dtype(df[c]) or is_string_dtype(df[c])
     ]
     return TextNormalizationOperation(subset=target, case="title").apply(df.copy())
+
+
+_REPAIR_MODES: frozenset[str] = frozenset({"core", "advanced"})
 
 
 @_handle_errors
@@ -691,17 +778,22 @@ def fix_encoding(
     mode: str = "core",
 ) -> pd.DataFrame:
     """Repair mojibake and encoding artifacts in text columns."""
-    target = cols or [
+    if mode not in _REPAIR_MODES:
+        raise ValueError(f"mode must be one of {sorted(_REPAIR_MODES)}, got '{mode}'")
+    target = _to_list(cols) or [
         c for c in df.columns if is_object_dtype(df[c]) or is_string_dtype(df[c])
     ]
     return EncodingRepairOperation(
-        subset=target, mode=mode, error_on_unrepaired=False  # type: ignore
+        subset=target,
+        mode=mode,  # type: ignore[arg-type]
+        error_on_unrepaired=False,
     ).apply(df.copy())
 
 
 # ===========================================================================
 # Feature Engineering
 # ===========================================================================
+
 
 @_handle_errors
 def log(
@@ -711,9 +803,9 @@ def log(
     output_col: str | None = None,
 ) -> pd.DataFrame:
     """Create natural-log transformed feature."""
-    return LogFeature(column=col, offset=offset, output_column=output_col).fit_transform(
-        df.copy()
-    )
+    return LogFeature(
+        column=col, offset=offset, output_column=output_col
+    ).fit_transform(df.copy())
 
 
 @_handle_errors
@@ -755,7 +847,7 @@ def ratio(
         numerator=num,
         denominator=denom,
         output_column=output_col,
-        zero_division=zero_division,  # type: ignore
+        zero_division=zero_division,
     ).fit_transform(df.copy())
 
 
@@ -788,6 +880,7 @@ def datetime_features(
 # Validate & Contract
 # ===========================================================================
 
+
 @_handle_errors
 def validate(
     df: pd.DataFrame, rules: list[str] | None = None
@@ -811,7 +904,9 @@ def validate(
 
 
 @_handle_errors
-def contract(df: pd.DataFrame, spec: dict[str, dict[str, Any]]) -> tuple[RuleResult, ...]:
+def contract(
+    df: pd.DataFrame, spec: dict[str, dict[str, Any]]
+) -> tuple[RuleResult, ...]:
     """
     Validate DataFrame against a declarative contract specification dictionary.
     Example:
@@ -841,6 +936,7 @@ def contract(df: pd.DataFrame, spec: dict[str, dict[str, Any]]) -> tuple[RuleRes
 # ===========================================================================
 # Report & Serialize
 # ===========================================================================
+
 
 @_handle_errors
 def report(df: pd.DataFrame, save: str | None = None) -> Report:

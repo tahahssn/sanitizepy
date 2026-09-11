@@ -146,7 +146,7 @@ class FillMissing(CleaningOperation):
         counts = non_missing.value_counts()
         top_count = counts.iloc[0]
         tied = [value for value, count in counts.items() if count == top_count]
-        return sorted(tied)[0]  # type: ignore[type-var]
+        return sorted(tied)[0]
 
     def apply(self, dataframe: pd.DataFrame) -> pd.DataFrame:
         super().apply(dataframe)

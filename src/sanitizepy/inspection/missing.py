@@ -67,7 +67,7 @@ class MissingInspectionResult:
             f"columns_with_missing={len(self.summary.columns_with_missing)})"
         )
 
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self) -> dict[str, object]:
         from dataclasses import asdict
 
         return {
@@ -80,7 +80,7 @@ class MissingInspectionResult:
 
         return json.dumps(self.to_dict(), indent=2, default=str)
 
-    def __rich_console__(self, console: Any, options: Any) -> Any:
+    def __rich_console__(self, console: object, options: object) -> object:
         from sanitizepy.ui import (
             COLOR_FAIL,
             COLOR_OK,
@@ -105,7 +105,12 @@ class MissingInspectionResult:
         rows = []
         for r in reports_with_missing:
             pct_val = r.missing_percentage
-            pct_style = COLOR_FAIL if pct_val > 10.0 else (COLOR_WARN if pct_val >= 2.0 else COLOR_OK)
+            if pct_val > 10.0:
+                pct_style = COLOR_FAIL
+            elif pct_val >= 2.0:
+                pct_style = COLOR_WARN
+            else:
+                pct_style = COLOR_OK
             pct_text = Text(f"{pct_val:.1f}%", style=pct_style)
             rows.append([r.column, f"{r.missing_count:,}", pct_text])
 
@@ -114,9 +119,10 @@ class MissingInspectionResult:
             yield Text("")
 
         if self.summary.missing_cells > 0:
+            n_cols = len(self.summary.columns_with_missing)
             yield render_status_row(
                 SYMBOL_WARN,
-                f"missing values across {len(self.summary.columns_with_missing)} columns",
+                f"missing values across {n_cols} columns",
                 count=self.summary.missing_cells,
             )
         else:

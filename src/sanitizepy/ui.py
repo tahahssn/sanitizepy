@@ -9,7 +9,8 @@ Presentation only — no business logic.
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any, Literal
 
 from rich import box
 from rich.console import Console, Group, RenderableType
@@ -36,6 +37,7 @@ COLOR_META: str = "cyan"  # headings, labels, metadata
 # SanitizeConsole
 # ===========================================================================
 
+
 class SanitizeConsole:
     """
     Console wrapper with environment detection and width responsiveness.
@@ -52,17 +54,15 @@ class SanitizeConsole:
     def is_notebook(self) -> bool:
         """Detect whether running in Jupyter Notebook, Lab, or Google Colab."""
         try:
-            from IPython import get_ipython  # type: ignore
+            from IPython import get_ipython  # type: ignore[attr-defined]
 
-            ip = get_ipython()
+            ip = get_ipython()  # type: ignore[no-untyped-call]
             if ip is None:
                 return False
             name = ip.__class__.__name__
             if name in ("ZMQInteractiveShell", "Shell"):
                 return True
-            if "google.colab" in str(ip):
-                return True
-            return False
+            return "google.colab" in str(ip)
         except (ImportError, NameError):
             return False
 
@@ -98,6 +98,7 @@ def get_console() -> Console:
 # Rendering Primitives
 # ===========================================================================
 
+
 def render_header(title: str, width: int = 40) -> Text:
     """
     Render standardized block header.
@@ -130,8 +131,8 @@ def render_footer(
     if hasattr(df_or_shape, "shape"):
         rows, cols = df_or_shape.shape
         try:
-            mb = df_or_shape.memory_usage(deep=True).sum() / (1024 * 1024)
-            parts.append(f"{rows:,} rows × {cols:,} columns  •  {mb:.1f} MB")
+            shape_mb = df_or_shape.memory_usage(deep=True).sum() / (1024 * 1024)
+            parts.append(f"{rows:,} rows × {cols:,} columns  •  {shape_mb:.1f} MB")
         except Exception:
             parts.append(f"{rows:,} rows × {cols:,} columns")
     elif isinstance(df_or_shape, tuple):
@@ -196,9 +197,9 @@ def render_table(
     truncate_limit = max_col_width or (20 if mode == "compact" else 35)
 
     for idx, h in enumerate(headers):
-        align = "left"
+        align: Literal["left", "right"] = "left"
         if col_align and idx in col_align:
-            align = col_align[idx]
+            align = col_align[idx]  # type: ignore[assignment]
         elif h.lower() in (
             "%",
             "missing",
@@ -345,9 +346,7 @@ def render_before_after(
     text.append(
         f"Before    {b_rows:,} rows × {b_cols:,} columns  •  {before_mb:.1f} MB\n"
     )
-    text.append(
-        f"After     {a_rows:,} rows × {a_cols:,} columns  •  {after_mb:.1f} MB"
-    )
+    text.append(f"After     {a_rows:,} rows × {a_cols:,} columns  •  {after_mb:.1f} MB")
     return text
 
 
@@ -395,6 +394,7 @@ __all__ = [
     "COLOR_FAIL",
     "COLOR_INFO",
     "COLOR_META",
+    "Text",
     "SanitizeConsole",
     "get_console",
     "render_header",

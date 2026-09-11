@@ -6,6 +6,8 @@ from __future__ import annotations
 
 import inspect as _inspect
 
+import pandas as pd
+
 import sanitizepy
 from sanitizepy import (
     DEFAULT_CONFIG,
@@ -14,7 +16,10 @@ from sanitizepy import (
     Cleaner,
     CleanerConfig,
     CleanerError,
+    CleaningPlan,
+    CleaningResult,
     ConfigurationError,
+    DatasetHealthReport,
     DataValidationError,
     EngineError,
     get_version,
@@ -175,11 +180,32 @@ class TestPublicApiCompatibility:
         assert callable(getattr(Cleaner, "profile", None))
         assert callable(getattr(Cleaner, "validate", None))
 
-    def test_module_level_helper_signatures_unchanged(self):
-        assert list(_inspect.signature(sanitizepy.inspect).parameters) == ["dataframe"]
+    def test_module_level_plan_signature_unchanged(self):
+        # `sanitizepy.plan` still points at the original core helper — it
+        # has no name collision with the Simple API.
         assert list(_inspect.signature(sanitizepy.plan).parameters) == ["target"]
 
-        clean_params = _inspect.signature(sanitizepy.clean).parameters
-        assert list(clean_params) == ["dataframe", "cleaning_plan", "dry_run"]
-        assert clean_params["cleaning_plan"].default is None
-        assert clean_params["dry_run"].default is False
+    def test_module_level_inspect_is_simple_api(self):
+        # `sanitizepy.inspect` / `sanitizepy.clean` are intentionally the
+        # Simple API's one-liner versions (df in, DatasetProfile /
+        # CleaningResult out). The original health-report/plan-based
+        # behavior remains fully available, unchanged, via
+        # `Cleaner().inspect(df)` and `Cleaner().clean(df)`.
+        assert list(_inspect.signature(sanitizepy.inspect).parameters) == ["df"]
+        assert list(_inspect.signature(sanitizepy.clean).parameters) == [
+            "df",
+            "verbose",
+            "dry_run",
+        ]
+
+    def test_cleaner_instance_methods_retain_original_contract(self):
+        # The expert-level Cleaner().inspect / Cleaner().plan / Cleaner().clean
+        # instance methods are completely untouched by the Simple API.
+        c = Cleaner()
+        df = pd.DataFrame({"a": [1, 2, 3]})
+        report = c.inspect(df)
+        assert isinstance(report, DatasetHealthReport)
+        cleaning_plan = c.plan(report)
+        assert isinstance(cleaning_plan, CleaningPlan)
+        result = c.clean(df, plan=cleaning_plan, dry_run=True)
+        assert isinstance(result, CleaningResult)

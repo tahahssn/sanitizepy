@@ -119,9 +119,12 @@ class TextQualityResult:
     encoding_garbage_count: int
 
     def __repr__(self) -> str:
-        return f"TextQualityResult(column={self.column!r}, non_null={self.non_null_count})"
+        return (
+            f"TextQualityResult(column={self.column!r}, "
+            f"non_null={self.non_null_count})"
+        )
 
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self) -> dict[str, object]:
         return {
             "column": self.column,
             "non_null_count": self.non_null_count,
@@ -143,8 +146,8 @@ class TextQualityResult:
 
         return json.dumps(self.to_dict(), indent=2, default=str)
 
-    def __rich_console__(self, console: Any, options: Any) -> Any:
-        from sanitizepy.ui import render_header, render_table, Text
+    def __rich_console__(self, console: object, options: object) -> object:
+        from sanitizepy.ui import Text, render_header, render_table
 
         yield render_header("text quality")
         yield Text("")
